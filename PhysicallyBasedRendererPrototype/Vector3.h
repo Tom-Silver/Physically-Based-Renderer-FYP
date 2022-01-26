@@ -4,6 +4,7 @@ namespace TSFYP
 {
 	struct Point3;
 
+	// Defines a 3D directional vector
 	struct Vector3
 	{
 		Vector3()
@@ -16,11 +17,12 @@ namespace TSFYP
 			, y(_y)
 			, z(_z)
 		{}
-		Vector3(const Point3& point);
+		explicit Vector3(const Point3& point);
 
 		float x, y, z;
 	};
 
+	// Defines a point in 3D space
 	struct Point3
 	{
 		Point3()
@@ -33,7 +35,7 @@ namespace TSFYP
 			, y(_y)
 			, z(_z)
 		{}
-		Point3(const Vector3& vec);
+		explicit Point3(const Vector3& vec);
 
 		float x, y, z;
 	};
@@ -41,10 +43,13 @@ namespace TSFYP
 	Vector3 operator+(const Vector3& lhs, const Vector3& rhs);
 	Vector3 operator-(const Vector3& lhs, const Vector3& rhs);
 	Vector3 operator*(const Vector3& lhs, const float rhs);
+	Vector3 operator*(const Vector3& lhs, const Vector3& rhs);
 	Vector3 operator/(const Vector3& lhs, const float rhs);
+	Vector3 operator/(const float lhs, const Vector3& rhs);
 
 	Vector3& operator+=(Vector3& lhs, const Vector3& rhs);
 	Vector3& operator-=(Vector3& lhs, const Vector3& rhs);
 	Vector3& operator*=(Vector3& lhs, const float rhs);
+	Vector3& operator*=(Vector3& lhs, const Vector3& rhs);
 	Vector3& operator/=(Vector3& lhs, const float rhs);
 }

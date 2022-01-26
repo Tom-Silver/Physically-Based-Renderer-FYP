@@ -4,6 +4,7 @@
 
 namespace TSFYP
 {
+	// Defines a ray that traverses infinitely in a direction from an origin
 	struct Ray
 	{
 		Ray()
@@ -16,4 +17,4 @@ namespace TSFYP
 		Point3 origin;
 		Vector3 dir;
 	};
-}		
+}

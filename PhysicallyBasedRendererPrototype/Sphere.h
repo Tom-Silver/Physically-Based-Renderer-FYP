@@ -5,6 +5,7 @@
 
 namespace TSFYP
 {
+	// Implements a simple 3D sphere for ray intersection
 	class Sphere :
 		public IShape
 	{
@@ -15,7 +16,7 @@ namespace TSFYP
 		{}
 		virtual ~Sphere() {}
 
-		virtual bool Intersects(const Ray& ray, IntersectionResult* result) override;
+		virtual bool Intersects(const Ray& ray, const Transform& transform, IntersectionResult* result) const override;
 
 	private:
 		float radius, radiusSq;

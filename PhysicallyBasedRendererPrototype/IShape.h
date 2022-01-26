@@ -9,6 +9,7 @@ namespace TSFYP
 
 	struct IntersectionResult;
 
+	// Interface that allows for polymorphism in ray intersection calculation
 	class IShape
 	{
 	public:
@@ -17,7 +18,7 @@ namespace TSFYP
 		{}
 		virtual ~IShape() {}
 
-		virtual bool Intersects(const Ray& ray, IntersectionResult* result) = 0;
+		virtual bool Intersects(const Ray& ray, const Transform& transform, IntersectionResult* result) const = 0;
 
 	protected:
 		Transform transform;

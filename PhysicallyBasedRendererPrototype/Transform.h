@@ -4,6 +4,7 @@
 
 namespace TSFYP
 {
+	// Stores ambiguous position, rotation and scale data
 	class Transform
 	{
 	public:

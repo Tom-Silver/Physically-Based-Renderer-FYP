@@ -5,6 +5,7 @@ namespace TSFYP
 	class Renderer;
 	class Scene;
 
+	// Main class that stores the subsystems of the project
 	class Application
 	{
 	public:
@@ -14,7 +15,7 @@ namespace TSFYP
 		void Run();
 
 	private:
-		Renderer* renderer;
-		Scene* scene;
+		Renderer* mRenderer;
+		Scene* mScene;
 	};
 }

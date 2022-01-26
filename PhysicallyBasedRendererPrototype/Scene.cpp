@@ -9,27 +9,24 @@
 
 namespace TSFYP
 {
-	Scene::Scene()
-	{
-		SceneObject* object = new SceneObject();
-		object->shape = new Sphere(5.0f);
-		object->transform = new Transform();
-		this->objects.push_back(*object);
-	}
+	Scene::Scene(const std::vector<SceneObject>& objects, const std::vector<Light>& lights)
+		: mObjects(objects)
+		, mLights(lights)
+		, mCamera(90.0f)
+	{}
 
-	bool Scene::Intersects(const Ray& ray, const IntersectionResult* result) const
+	bool Scene::Intersects(const Ray& ray, IntersectionResult* result) const
 	{
 		const SceneObject* closestObject = nullptr;
 		float closest = std::numeric_limits<float>::max();
-		for (const SceneObject& object : this->objects)
+		for (const SceneObject& object : mObjects)
 		{
-			IntersectionResult* newResult = nullptr;
-			if (object.shape->Intersects(ray, newResult) && newResult)
+			IntersectionResult newResult;
+			if (object.shape->Intersects(ray, *object.transform, &newResult))
 			{
-				if (newResult->t < closest)
+				if (newResult.t < closest)
 				{
-					delete result;
-					result = newResult;
+					*result = newResult;
 
 					closest = result->t;
 					closestObject = &object;
@@ -38,7 +35,10 @@ namespace TSFYP
 		}
 
 		if (closestObject)
+		{
+			result->intersectedObject = closestObject;
 			return true;
+		}
 
 		return false;
 	}

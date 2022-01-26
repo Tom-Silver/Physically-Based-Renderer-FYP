@@ -1,13 +1,12 @@
 #include "Application.h"
 
-using namespace TSFYP;
-
 int main(int argc, char** argv)
 {
-	Application* application = new Application();
+	TSFYP::Application* application = new TSFYP::Application();
 	application->Run();
 
 	delete application;
+	application = nullptr;
 
 	return 0;
 }

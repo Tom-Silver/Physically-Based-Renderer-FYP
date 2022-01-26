@@ -9,7 +9,7 @@ namespace TSFYP
 	{}
 	Point3::Point3(const Vector3& vec)
 		: x(vec.x)
-		, y(vec.z)
+		, y(vec.y)
 		, z(vec.z)
 	{}
 
@@ -28,9 +28,19 @@ namespace TSFYP
 		return Vector3(lhs.x * rhs, lhs.y * rhs, lhs.z * rhs);
 	}
 
+	Vector3 operator*(const Vector3& lhs, const Vector3& rhs)
+	{
+		return Vector3(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z);
+	}
+
 	Vector3 operator/(const Vector3& lhs, const float rhs)
 	{
 		return Vector3(lhs.x / rhs, lhs.y / rhs, lhs.z / rhs);
+	}
+
+	Vector3 operator/(const float lhs, const Vector3& rhs)
+	{
+		return Vector3(lhs / rhs.x, lhs / rhs.y, lhs / rhs.z);
 	}
 
 	Vector3& operator+=(Vector3& lhs, const Vector3& rhs)
@@ -56,6 +66,15 @@ namespace TSFYP
 		lhs.x *= rhs;
 		lhs.y *= rhs;
 		lhs.z *= rhs;
+
+		return lhs;
+	}
+
+	Vector3& operator*=(Vector3& lhs, const Vector3& rhs)
+	{
+		lhs.x *= rhs.x;
+		lhs.y *= rhs.y;
+		lhs.z *= rhs.z;
 
 		return lhs;
 	}

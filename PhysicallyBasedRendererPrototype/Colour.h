@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Vector3.h"
-
 namespace TSFYP
 {
 	// Stores an RGB colour and defines additive colour mixing operators
@@ -17,9 +15,6 @@ namespace TSFYP
 			, g(_g)
 			, b(_b)
 		{}
-		explicit Colour(const Vector3& vec);
-		
-		explicit operator Vector3() const { return Vector3(r, g, b); }
 
 		float r, g, b;
 

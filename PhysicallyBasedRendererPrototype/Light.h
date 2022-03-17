@@ -1,7 +1,10 @@
 #pragma once
 
+// External includes
+#include <glm/glm.hpp>
+
+// Internal includes
 #include "Colour.h"
-#include "Vector3.h"
 
 namespace TSFYP
 {
@@ -9,14 +12,16 @@ namespace TSFYP
 	class Light
 	{
 	public:
-		Light(const Point3& pos, const Colour& emissionColour);
+		Light(const glm::vec3& pos, const glm::vec3& emissionColour);
 		~Light();
 
-		Point3 pos() const { return mPos; }
-		Colour emittedColour() const { return mEmissionColour; }
+		void CreateGui();
+
+		const glm::vec3& pos() const { return mPos; }
+		const glm::vec3& emittedColour() const { return mEmissionColour; }
 
 	private:
-		Point3 mPos;
-		Colour mEmissionColour;
+		glm::vec3 mPos;
+		glm::vec3 mEmissionColour;
 	};
 }

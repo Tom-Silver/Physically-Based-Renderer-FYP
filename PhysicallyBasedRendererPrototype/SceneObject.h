@@ -4,14 +4,17 @@
 
 namespace TSFYP
 {
-	class IShape;
+	struct Material;
+	struct Mesh;
 	class Transform;
 
 	// Defines a 3D visible object in the scene to be rendered
 	struct SceneObject
 	{
-		Colour colour = Colour::Green;
-		IShape* shape;
+		void CreateGui();
+
+		Mesh* mesh;
+		Material* material;
 		Transform* transform;
 	};
 }

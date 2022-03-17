@@ -3,107 +3,169 @@
 // External includes
 #include <algorithm>
 #include <fstream>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <glm/gtc/matrix_transform.hpp>
+#include <ImGui/imgui_impl_opengl3.h>
+#include <iostream>
 
 // Internal includes
-#include "GeometryOperations.h"
+#include "ImGui/imgui.h"
+#include "Material.h"
+#include "Mesh.h"
 #include "Scene.h"
+#include "Shader.h"
 #include "Transform.h"
+#include "Window.h"
 
 // Preprocessor definitions
 #define PI 3.141592653589793f
 
 namespace TSFYP
 {
-	void WriteToFile(const char* fileName, const unsigned short imageWidth, const unsigned short imageHeight, Colour* image);
+	void SetMaterialUniforms(const Material* material);
+
+	void CheckGLErrors();
 
 	Renderer::Renderer()
-		: mClearColour(Colour::Black)
+		: mClearColour(glm::vec3(0.0f))
+		, pWindow(nullptr)
+		, pScene(nullptr)
 	{}
 
+	// The pointer members are not the responsibility of Renderer, so there is nothing to delete
 	Renderer::~Renderer()
 	{}
 
-	void Renderer::Render(const Scene& scene, const unsigned short imageWidth, const unsigned short imageHeight)
+	void Renderer::Render()
 	{
-		long long imageSize = (long long)imageWidth * (long long)imageHeight;
-		Colour* image = new Colour[imageSize];
-		Colour* pixel = image;
+		// Begin render by clearing buffer with set clear colour
+		glClearColor(mClearColour.r, mClearColour.g, mClearColour.b, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// Precalculate inverse width and height to save expensive division operations every loop
-		float invWidth = 1.0f / float(imageWidth);
-		float invHeight = 1.0f / float(imageHeight);
+		RenderSceneObject(&pScene->mObject, pScene);
 
-		// Also precalculate angle and aspectratio to avoid recalculation
-		float fov = scene.camera().fov();
-		float angle = tanf(PI * 0.5f * fov / 180.0f);
+		// Render ImGui after scene so it appears above it
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-		float aspectratio = (float)imageWidth / float(imageHeight);
-
-		for (unsigned short y = 0; y < imageHeight; y++)
-		{
-			for (unsigned short x = 0; x < imageWidth; x++, pixel++)
-			{
-				float xDir = (2.0f * ((x + 0.5f) * invWidth) - 1.0f) * angle * aspectratio;
-				float yDir = (1.0f - 2.0f * ((y + 0.5f) * invHeight)) * angle;
-
-				Ray ray;
-				ray.dir = Normalise(Vector3(xDir, yDir, -1.0f));
-				ray.origin = Point3(0.0f, 0.0f, 0.0f);
-
-				*pixel = Li(ray, scene);
-			}
-		}
-
-		// Output image to file
-		WriteToFile("output.ppm", imageWidth, imageHeight, image);
+		// Finally, swap buffers
+		glfwSwapBuffers(pWindow->glfwWindow);
 	}
 
-	Colour Renderer::Li(const Ray& ray, const Scene& scene)
+	void Renderer::CreateGui()
+	{}
+
+	bool Renderer::Initialise(Window* windowPtr, Scene* scene)
 	{
-		IntersectionResult result;
-		if (!scene.Intersects(ray, &result))
-		{
-			return mClearColour;
-		}
-
-		Vector3 surfaceColour = Vector3(result.intersectedObject->colour);
-
-		Colour reflectedColour = mClearColour;
-		for (const Light& light : scene.mLights)
-		{
-			Vector3 surfaceToLight = Vector3(light.pos()) - Vector3(result.intersectionPoint);
-			Normalise(surfaceToLight);
-
-			Colour litSurfaceColour = Colour(surfaceColour * std::max(0.0f, Dot(result.intersectionNormal, surfaceToLight)));
-			Colour emittedColour = Colour(Vector3(light.emittedColour()) * std::max(0.0f, Dot(result.intersectionNormal, surfaceToLight)));
-			reflectedColour += result.intersectedObject->colour + emittedColour; // isn't working as it should. why?
-		}
-
-		return reflectedColour;
-	}
-
-	void WriteToFile(const char* fileName, const unsigned short imageWidth, const unsigned short imageHeight, Colour* image)
-	{
-		// Create a buffer to write image into. This will allow the entire image to be written to file at once, which is a lot more efficient than doing it pixel by pixel
-		long long imageSize = (long long)imageWidth * (long long)imageHeight;
-		unsigned char* buffer = new unsigned char[imageSize * 3];
+		if (!windowPtr) { return false; }
+		pWindow = windowPtr;
 		
-		unsigned int j = 0;
-		for (unsigned int i = 0; i < imageSize; i++, j += 3)
+		if (!scene) { return false; }
+		pScene = scene;
+
+		return true;
+	}
+
+	void Renderer::RenderSceneObject(SceneObject* sceneObject, Scene* scene)
+	{
+		// Bind shader
+		Shader* shader = sceneObject->material->shader;
+		shader->Use();
+		
+		// Set uniform matrices
+		glm::mat4 projection = scene->mCamera.projection();
+		shader->SetUniform("projection", projection);
+
+		glm::mat4 view = scene->mCamera.view();
+		shader->SetUniform("view", view);
+
+		glm::mat4 world = sceneObject->transform->world();
+		shader->SetUniform("world", world);
+
+		SetMaterialUniforms(sceneObject->material);
+		SetLightShaderData(scene, shader);
+
+		// Set uniform textures
+		unsigned int albedoNo = 0;
+		unsigned int normalNo = 0;
+		unsigned int metallicNo = 0;
+		unsigned int roughnessNo = 0;
+		unsigned int aoNo = 0;
+		for (unsigned int i = 0; i < sceneObject->material->textures.size(); i++)
 		{
-			buffer[j] = (unsigned char)(std::min(1.0f, image[i].r) * 255.0f);
-			buffer[j + 1] = (unsigned char)(std::min(1.0f, image[i].g) * 255.0f);
-			buffer[j + 2] = (unsigned char)(std::min(1.0f, image[i].b) * 255.0f);
+			glActiveTexture(GL_TEXTURE0 + i);
+			Texture2D texture = sceneObject->material->textures[i];
+
+			std::string uniformName;
+			switch (texture.textureType)
+			{
+			case Texture2D::TextureType::ALBEDO:
+				uniformName = "albedo" + std::to_string(albedoNo++);
+				break;
+			case Texture2D::TextureType::NORMAL:
+				uniformName = "normal" + std::to_string(normalNo++);
+				break;
+			case Texture2D::TextureType::METALLIC:
+				uniformName = "metallic" + std::to_string(metallicNo++);
+				break;
+			case Texture2D::TextureType::ROUGHNESS:
+				uniformName = "roughness" + std::to_string(roughnessNo++);
+				break;
+			case Texture2D::TextureType::AO:
+				uniformName = "ao" + std::to_string(aoNo++);
+				break;
+			}
+
+			shader->SetUniform("material." + uniformName, (int)i);
+
+			glBindTexture(GL_TEXTURE_2D, texture.id);
 		}
 
-		FILE* file;
-		fopen_s(&file, fileName, "wb");
-		if (!file)
-			return;
+		// Bind VAO and draw
+		glBindVertexArray(sceneObject->mesh->vao);
+		glDrawElements(GL_TRIANGLE_STRIP, sceneObject->mesh->indexCount, GL_UNSIGNED_INT, 0);
 
-		fprintf(file, "P6\n%d %d\n255\n", imageWidth, imageHeight);
-		fwrite(buffer, sizeof(buffer[0]), imageSize * 3, file); // Write buffer containing image data to file
+		// Unbind bound objects
+		glBindVertexArray(0);
+		shader->Unuse();
+		glActiveTexture(GL_TEXTURE0);
+	}
 
-		fclose(file);
+	void Renderer::SetLightShaderData(Scene* scene, Shader* shader)
+	{
+		unsigned int noLights = scene->mLights.size();
+		shader->SetUniform("noLights", noLights);
+
+		glm::vec3 camPos = scene->mCamera.pos();
+		shader->SetUniform("camPos", camPos);
+
+		for (unsigned int i = 0; i < noLights; i++)
+		{
+			Light& light = scene->mLights[i];
+
+			glm::vec3 pos = light.pos();
+			glm::vec3 emittedColour = light.emittedColour();
+
+			shader->SetUniform("lightPositions[" + std::to_string(i) + "]", pos);
+			shader->SetUniform("lightColours[" + std::to_string(i) + "]", emittedColour);
+		}
+	}
+
+	void SetMaterialUniforms(const Material* material)
+	{
+		for (unsigned int i = 0; i < material->uniforms.size(); i++)
+		{
+			material->uniforms[i]->Set(material->shader);
+		}
+	}
+
+	void CheckGLErrors()
+	{
+		GLenum error = glGetError();
+		if (error != GL_NO_ERROR)
+		{
+			std::cerr << "GL error! Code: " << error << std::endl;
+		}
 	}
 }

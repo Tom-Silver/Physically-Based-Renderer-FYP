@@ -78,9 +78,11 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <LibraryPath>$(SolutionDir)Dependencies\lib\Debug\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <LibraryPath>$(SolutionDir)Dependencies\lib\Release\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -116,10 +118,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -130,47 +134,74 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Dependencies\include\ImGui\imgui.cpp" />
+    <ClCompile Include="..\Dependencies\include\ImGui\imgui_demo.cpp" />
+    <ClCompile Include="..\Dependencies\include\ImGui\imgui_draw.cpp" />
+    <ClCompile Include="..\Dependencies\include\ImGui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="..\Dependencies\include\ImGui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="..\Dependencies\include\ImGui\imgui_tables.cpp" />
+    <ClCompile Include="..\Dependencies\include\ImGui\imgui_widgets.cpp" />
+    <ClCompile Include="..\Dependencies\src\glad\glad.c" />
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Colour.cpp" />
-    <ClCompile Include="AACube.cpp" />
-    <ClCompile Include="GeometryOperations.cpp" />
+    <ClCompile Include="DeltaTimeClock.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Material.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneObject.cpp" />
+    <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="ShaderCompiler.cpp" />
     <ClCompile Include="Sphere.cpp" />
-    <ClCompile Include="Vector2.cpp" />
-    <ClCompile Include="Vector3.cpp" />
+    <ClCompile Include="Texture2D.cpp" />
+    <ClCompile Include="Transform.cpp" />
+    <ClCompile Include="Uniform.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Dependencies\include\ImGui\imconfig.h" />
+    <ClInclude Include="..\Dependencies\include\ImGui\imgui.h" />
+    <ClInclude Include="..\Dependencies\include\ImGui\imgui_impl_glfw.h" />
+    <ClInclude Include="..\Dependencies\include\ImGui\imgui_impl_opengl3.h" />
+    <ClInclude Include="..\Dependencies\include\ImGui\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="..\Dependencies\include\ImGui\imgui_internal.h" />
+    <ClInclude Include="..\Dependencies\include\ImGui\imstb_rectpack.h" />
+    <ClInclude Include="..\Dependencies\include\ImGui\imstb_textedit.h" />
+    <ClInclude Include="..\Dependencies\include\ImGui\imstb_truetype.h" />
     <ClInclude Include="Application.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Colour.h" />
-    <ClInclude Include="AACube.h" />
-    <ClInclude Include="GeometryOperations.h" />
+    <ClInclude Include="DeltaTimeClock.h" />
     <ClInclude Include="Light.h" />
-    <ClInclude Include="Mesh.h" />
-    <ClInclude Include="Ray.h" />
+    <ClInclude Include="Material.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneObject.h" />
-    <ClInclude Include="IShape.h" />
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="Shader.h" />
+    <ClInclude Include="ShaderCompiler.h" />
     <ClInclude Include="Sphere.h" />
+    <ClInclude Include="stb_image.h" />
+    <ClInclude Include="Texture2D.h" />
     <ClInclude Include="Transform.h" />
-    <ClInclude Include="Vector2.h" />
-    <ClInclude Include="Vector3.h" />
+    <ClInclude Include="Uniform.h" />
+    <ClInclude Include="Window.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="basicPBRFS.glsl" />
+    <None Include="basicPBRVS.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

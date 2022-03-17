@@ -1,24 +1,25 @@
 #pragma once
 
 // Parent includes
-#include "IShape.h"
+#include "Mesh.h"
 
 namespace TSFYP
 {
-	// Implements a simple 3D sphere for ray intersection
+	// Implements a simple 3D sphere mesh
 	class Sphere :
-		public IShape
+		public Mesh
 	{
 	public:
-		Sphere(const float _radius)
+		Sphere(const unsigned int vao, const unsigned int indexCount, const float _radius)
 			: radius(_radius)
-			, radiusSq(_radius* _radius)
+			, radiusSq(_radius * _radius)
+			, Mesh(vao, indexCount)
 		{}
 		virtual ~Sphere() {}
-
-		virtual bool Intersects(const Ray& ray, const Transform& transform, IntersectionResult* result) const override;
 
 	private:
 		float radius, radiusSq;
 	};
+
+	Sphere* CreateSphere(const float radius);
 }

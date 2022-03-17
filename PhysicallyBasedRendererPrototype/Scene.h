@@ -10,22 +10,13 @@
 
 namespace TSFYP
 {
-	struct IntersectionResult;
-	struct Ray;
-
-	// Stores the 3D scene to be rendered, including the world objects, lights, and camera that will take the picture
-	class Scene
+	// Stores the 3D scene to be rendered, including the material sphere, lights, and camera
+	struct Scene
 	{
-	public:
-		Scene(const std::vector<SceneObject>& objects, const std::vector<Light>& lights);
+		void CreateGui();
 
-		bool Intersects(const Ray& ray, IntersectionResult* result) const;
-
-		std::vector<Light> mLights; // public to allow access to loop through lights during rendering
-		const Camera camera() const { return mCamera; }
-
-	private:
 		Camera mCamera;
-		std::vector<SceneObject> mObjects;
+		SceneObject mObject;
+		std::vector<Light> mLights; // public to allow access to loop through lights during rendering
 	};
 }

@@ -4,12 +4,6 @@
 
 namespace TSFYP
 {
-	Colour::Colour(const Vector3& vec)
-		: r(vec.x)
-		, g(vec.y)
-		, b(vec.z)
-	{}
-
 	Colour operator+(const Colour& lhs, const Colour& rhs)
 	{
 		float r = (lhs.r + rhs.r) / 2.0f;

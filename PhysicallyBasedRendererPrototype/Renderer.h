@@ -1,12 +1,15 @@
 #pragma once
 
-// Internal includes
-#include "Colour.h"
-#include "Ray.h"
-#include "Scene.h"
+// External includes
+#include <glm/glm.hpp>
 
 namespace TSFYP
 {
+	struct Scene;
+	struct SceneObject;
+	struct Shader;
+	struct Window;
+
 	// Handles the rendering of the final image
 	class Renderer
 	{
@@ -14,15 +17,20 @@ namespace TSFYP
 		Renderer();
 		~Renderer();
 
-		// Generates an image of the given scene
-		void Render(const Scene& scene, const unsigned short imageWidth, const unsigned short imageHeight);
+		bool Initialise(Window* windowPtr, Scene* scene);
 
-		void SetClearColour(const Colour& colour) { mClearColour = colour; }
+		void Render();
+
+		void CreateGui();
+
+		void SetClearColour(const glm::vec3& colour) { mClearColour = colour; }
 
 	private:
-		// Determines the colour of a pixel by tracing the given ray through the given scene
-		Colour Li(const Ray& ray, const Scene& scene);
+		void RenderSceneObject(SceneObject* sceneObject, Scene* scene);
+		void SetLightShaderData(Scene* scene, Shader* shader);
 
-		Colour mClearColour;
+		Scene* pScene;
+		glm::vec3 mClearColour;
+		Window* pWindow;
 	};
 }

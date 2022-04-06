@@ -8,17 +8,19 @@
 #include <ImGui/imgui_impl_glfw.h>
 
 // Internal includes
-#include "Material.h"
+#include "GuiLayer.h"
+#include "MaterialLoader.h"
 #include "Renderer.h"
 #include "ShaderCompiler.h"
 #include "Sphere.h"
 #include "Scene.h"
+#include "Texture2D.h"
 #include "Window.h"
 
 // Preprocessor definitions
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 720
-#define WINDOW_TITLE "PBR Viewer"
+#define WINDOW_TITLE "PBR Material Viewer"
 
 #define FRAME_CAP 60
 #define TARGET_DELTA_TIME 1.0f / (float)FRAME_CAP
@@ -30,14 +32,19 @@
 #define MOVE_SPEED 1000.0f
 #define ZOOM_SPEED 10.0f
 
+#define MIN_ZOOM -0.1f
+#define MAX_ZOOM 5.5f
+
 namespace TSFYP
 {
 	// Other prototypes
 	bool InitialiseGLFW(GLFWwindow** windowPtr);
 	bool InitialiseGlad();
+	bool ConvertEquirectangularToCubemap();
 
 	// GLFW callbacks
 	void GLFWErrorCallback(int error, const char* description);
+	void GLFWWindowCloseCallback(GLFWwindow* window);
 
 	Application::Application()
 		: mRenderer(nullptr)
@@ -46,7 +53,10 @@ namespace TSFYP
 		, mQuit(false)
 		, mLastMouseX(0.0f)
 		, mLastMouseY(0.0f)
-		, mLastScrollY(0.0f)
+		, mGuiContext(nullptr)
+		, mGuiIO(nullptr)
+		, mGuiLayer(nullptr)
+		, mCurrentZoom(1.0f)
 	{}
 
 	Application::~Application()
@@ -59,8 +69,6 @@ namespace TSFYP
 
 		glfwSetWindowShouldClose(mWindow->glfwWindow, GLFW_TRUE);
 		glfwTerminate();
-
-		delete mWindow->glfwWindow;
 		mWindow->glfwWindow = nullptr;
 	}
 
@@ -83,8 +91,11 @@ namespace TSFYP
 			ImGui_ImplGlfw_NewFrame();
 			ImGui::NewFrame();
 
-			CreateGui();
+			mGuiLayer->CreateGui();
+
 			HandleInput(deltaTime);
+
+			mScene->Update(deltaTime);
 
 			mRenderer->Render();
 
@@ -92,27 +103,12 @@ namespace TSFYP
 		}
 	}
 
-	void Application::CreateGui()
-	{
-		if (ImGui::Begin("Scene info"))
-		{
-			mScene->CreateGui();
-		}
-		ImGui::End();
-
-		if (ImGui::Begin("Renderer info"))
-		{
-			mRenderer->CreateGui();
-		}
-		ImGui::End();
-	}
-
 	void Application::HandleInput(float deltaTime)
 	{
 		ImVec2 mousePos = ImGui::GetMousePos();
 
 		// Arcball camera rotation
-		if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && !ImGui::IsWindowHovered() && !ImGui::IsAnyItemHovered())
+		if (ImGui::IsMouseDown(ImGuiMouseButton_Left)/* && !ImGui::IsWindowHovered() && !ImGui::IsAnyItemHovered()*/)
 		{
 			Camera& camera = mScene->mCamera;
 
@@ -144,7 +140,7 @@ namespace TSFYP
 			glm::vec3 right = camera.right();
 			rotationMatrixY = glm::rotate(rotationMatrixY, yAngle, right);
 			glm::vec3 finalPos;
-			if ((yAngle >= 0.0f && camPos.y < Y_MARGIN) || ((yAngle < 0.0f) && camPos.y > -Y_MARGIN))
+			if ((yAngle >= 0.0f && camPos.y < Y_MARGIN) || ((yAngle < 0.0f) && camPos.y / mCurrentZoom > -Y_MARGIN / mCurrentZoom))
 			{
 				finalPos = (rotationMatrixY * (camPos - camPivot)) + camPivot;
 			}
@@ -157,7 +153,7 @@ namespace TSFYP
 			camera.SetPos(finalPos);
 		}
 
-		if (ImGui::IsMouseDown(ImGuiMouseButton_Right) && !ImGui::IsWindowHovered() && !ImGui::IsAnyItemHovered())
+		if (ImGui::IsMouseDown(ImGuiMouseButton_Right)/* && !ImGui::IsWindowHovered() && !ImGui::IsAnyItemHovered()*/)
 		{
 			SceneObject& object = mScene->mObject;
 			
@@ -185,12 +181,25 @@ namespace TSFYP
 
 			float scrollAmount = scrollY * ZOOM_SPEED * deltaTime;
 
-			glm::mat4 translateMatrix(1.0f);
-			translateMatrix = glm::translate(translateMatrix, camForward * scrollAmount);
+			if (mCurrentZoom + scrollAmount > MAX_ZOOM)
+			{
+				mCurrentZoom = MAX_ZOOM;
+			}
+			else if (mCurrentZoom + scrollAmount < MIN_ZOOM)
+			{
+				mCurrentZoom = MIN_ZOOM;
+			}
+			else
+			{
+				mCurrentZoom += scrollAmount;
 
-			glm::vec3 finalPos = translateMatrix * camPos;
+				glm::mat4 translateMatrix(1.0f);
+				translateMatrix = glm::translate(translateMatrix, camForward * scrollAmount);
 
-			camera.SetPos(finalPos);
+				glm::vec3 finalPos = translateMatrix * camPos;
+
+				camera.SetPos(finalPos);
+			}
 		}
 
 		mLastMouseX = mousePos.x;
@@ -207,6 +216,12 @@ namespace TSFYP
 		mRenderer = new Renderer();
 		if (!mRenderer->Initialise(mWindow, mScene)) { return false; }
 		mRenderer->SetClearColour(glm::vec3(0.2f, 0.2f, 0.2f));
+		
+		// Load HDR environment map and create cubemap, then convert environment map to cubemap
+		ConvertEquirectangularToCubemap();
+
+		// Initialise gui layer
+		mGuiLayer = new GuiLayer(mRenderer, mScene);
 
 		return true;
 	}
@@ -221,6 +236,9 @@ namespace TSFYP
 		if (!InitialiseGLFW(&mWindow->glfwWindow)) { return false; }
 		if (!InitialiseGlad()) { return false; }
 
+		// Link this Application object to GLFW callbacks to allow interaction
+		glfwSetWindowUserPointer(mWindow->glfwWindow, this);
+
 		return true;
 	}
 
@@ -230,8 +248,8 @@ namespace TSFYP
 		{
 			return false;
 		}
-		
-		// Set callbacks
+
+		// Set error callback before doing anything else with GLFW
 		glfwSetErrorCallback(GLFWErrorCallback);
 
 		// Set window hints before creating window
@@ -247,6 +265,9 @@ namespace TSFYP
 			return false;
 		}
 		glfwMakeContextCurrent(*windowPtr);
+
+		// Set callbacks
+		glfwSetWindowCloseCallback(*windowPtr, GLFWWindowCloseCallback);
 
 		return true;
 	}
@@ -265,11 +286,6 @@ namespace TSFYP
 		//glEnable(GL_MULTISAMPLE);
 
 		return true;
-	}
-
-	void GLFWErrorCallback(int error, const char* description)
-	{
-		fprintf(stderr, "Error: %s\n", description);
 	}
 
 	bool Application::InitialiseImGui()
@@ -310,68 +326,12 @@ namespace TSFYP
 			SceneObject& object = mScene->mObject;
 
 			// Initialise material
-			{
-				object.material = new Material();
-				Material* material = object.material;
-
-				// Test uniform
-				{
-					FloatUniform* uniform = new FloatUniform();
-					uniform->name = "test";
-					uniform->data = 20.0f;
-					material->uniforms.emplace_back(uniform);
-				}
-
-				// Initialise shader program
-				std::string shaderName = "basicPBR";
-				std::string vertexPath = "basicPBRVS.glsl";
-				std::string fragmentPath = "basicPBRFS.glsl";
-				material->shader = CreateShader(shaderName, vertexPath, fragmentPath);
-
-				// Initialise textures
-				std::string materialName = "BambooWood";
-
-				// Albedo
-				{
-					Texture2D::TextureType textureType = Texture2D::TextureType::ALBEDO;
-					std::string texturePath = "Resources/" + materialName + "/albedo.png";
-					Texture2D texture = CreateTexture2D(textureType, texturePath);
-					material->textures.emplace_back(texture);
-				}
-				// Normal
-				{
-					Texture2D::TextureType textureType = Texture2D::TextureType::NORMAL;
-					std::string texturePath = "Resources/" + materialName + "/normal.png";
-					Texture2D texture = CreateTexture2D(textureType, texturePath);
-					material->textures.emplace_back(texture);
-				}
-				// Metallic
-				{
-					Texture2D::TextureType textureType = Texture2D::TextureType::METALLIC;
-					std::string texturePath = "Resources/" + materialName + "/metallic.png";
-					Texture2D texture = CreateTexture2D(textureType, texturePath);
-					material->textures.emplace_back(texture);
-				}
-				// Roughness
-				{
-					Texture2D::TextureType textureType = Texture2D::TextureType::ROUGHNESS;
-					std::string texturePath = "Resources/" + materialName + "/roughness.png";
-					Texture2D texture = CreateTexture2D(textureType, texturePath);
-					material->textures.emplace_back(texture);
-				}
-				// AO
-				{
-					Texture2D::TextureType textureType = Texture2D::TextureType::AO;
-					std::string texturePath = "Resources/" + materialName + "/ao.png";
-					Texture2D texture = CreateTexture2D(textureType, texturePath);
-					material->textures.emplace_back(texture);
-				}
-			}
-			
+			object.material = LoadMaterial("BambooWood");
 
 			// Initialise mesh
 			float radius = 1.0f;
-			object.mesh = CreateSphere(radius);
+			unsigned int segmentCircumference = 128;
+			object.mesh = CreateSphere(radius, segmentCircumference);
 			 
 			// Initialise transform
 			glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -386,9 +346,49 @@ namespace TSFYP
 			glm::vec3 pos(-10.0f, 10.0f, -10.0f);
 			glm::vec3 emittedColour(1.0f, 1.0f, 1.0f);
 
-			mScene->mLights.emplace_back(Light(pos, emittedColour));
+			mScene->mLights.emplace_back(new PointLight(pos, emittedColour));
 		}
 
 		return true;
+	}
+
+	bool ConvertEquirectangularToCubemap()
+	{
+		Texture2D equirectangularTexture = CreateTexture2DFloat("environmentmap", Texture2D::TextureType::ALBEDO, "Resources/Environments/RidgecrestRoad/Ridgecrest_Road_Env.hdr");
+
+		Texture2D cubemap = CreateEmptyCubemap("environmentcubemap");
+
+		glm::mat4 captureViews[] =
+		{
+			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
+			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
+			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
+		};
+		glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+
+		Shader* equirectangularToCubemapShader = CreateShader("equirectangularToCubemap", "equirectangularToCubemapVS.glsl", "equirectangularToCubemapFS.glsl");
+		equirectangularToCubemapShader->Use();
+		equirectangularToCubemapShader->SetUniform("equirectangularMap", 0);
+		equirectangularToCubemapShader->SetUniform("projection", captureProjection);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, equirectangularTexture.id);
+
+		glViewport(0, 0, 512, 512); // Set viewport to dimensions of the capture (512x512)
+		//glBindFramebuffer(GL_FRAMEBUFFER, );
+	}
+
+	void GLFWErrorCallback(int error, const char* description)
+	{
+		fprintf(stderr, "Error: %s\n", description);
+	}
+
+	void GLFWWindowCloseCallback(GLFWwindow* window)
+	{
+		Application* application = (Application*)glfwGetWindowUserPointer(window);
+		application->Quit();
 	}
 }

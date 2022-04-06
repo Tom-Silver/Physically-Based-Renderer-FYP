@@ -4,6 +4,18 @@
 
 namespace TSFYP
 {
+	Colour::Colour()
+		: r(0.0f)
+		, g(0.0f)
+		, b(0.0f)
+	{}
+
+	Colour::Colour(const float _r, const float _g, const float _b)
+		: r(_r)
+		, g(_g)
+		, b(_b)
+	{}
+
 	Colour operator+(const Colour& lhs, const Colour& rhs)
 	{
 		float r = (lhs.r + rhs.r) / 2.0f;

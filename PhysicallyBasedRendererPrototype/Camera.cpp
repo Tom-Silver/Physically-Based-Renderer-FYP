@@ -39,45 +39,43 @@ namespace TSFYP
 
 	void Camera::CreateGui()
 	{
-		if (ImGui::Begin("Camera"))
+		ImGui::Separator();
+		ImGui::Text("Camera");
+
+		// Pos
 		{
-			// Pos
-			{
-				glm::vec3 pos = this->pos();
-				std::string text = "Pos: " + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ", " + std::to_string(pos.z);
-				ImGui::Text(text.c_str());
-			}
+			glm::vec3 pos = this->pos();
+			std::string text = "Pos: " + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ", " + std::to_string(pos.z);
+			ImGui::Text(text.c_str());
+		}
 			
-			// At
-			{
-				glm::vec3 at = this->at();
-				std::string text = "At: " + std::to_string(at.x) + ", " + std::to_string(at.y) + ", " + std::to_string(at.z);
-				ImGui::Text(text.c_str());
-			}
-
-			// Up
-			{
-				glm::vec3 up = this->up();
-				std::string text = "Up: " + std::to_string(up.x) + ", " + std::to_string(up.y) + ", " + std::to_string(up.z);
-				ImGui::Text(text.c_str());
-			}
-
-			// Forward vector
-			{
-				glm::vec3 forward = this->forward();
-				std::string text = "Forward: " + std::to_string(forward.x) + ", " + std::to_string(forward.y) + ", " + std::to_string(forward.z);
-				ImGui::Text(text.c_str());
-			}
-
-			// Right vector
-			{
-				glm::vec3 right = this->right();
-				std::string text = "Right: " + std::to_string(right.x) + ", " + std::to_string(right.y) + ", " + std::to_string(right.z);
-				ImGui::Text(text.c_str());
-			}
+		// At
+		{
+			glm::vec3 at = this->at();
+			std::string text = "At: " + std::to_string(at.x) + ", " + std::to_string(at.y) + ", " + std::to_string(at.z);
+			ImGui::Text(text.c_str());
 		}
 
-		ImGui::End();
+		// Up
+		{
+			glm::vec3 up = this->up();
+			std::string text = "Up: " + std::to_string(up.x) + ", " + std::to_string(up.y) + ", " + std::to_string(up.z);
+			ImGui::Text(text.c_str());
+		}
+
+		// Forward vector
+		{
+			glm::vec3 forward = this->forward();
+			std::string text = "Forward: " + std::to_string(forward.x) + ", " + std::to_string(forward.y) + ", " + std::to_string(forward.z);
+			ImGui::Text(text.c_str());
+		}
+
+		// Right vector
+		{
+			glm::vec3 right = this->right();
+			std::string text = "Right: " + std::to_string(right.x) + ", " + std::to_string(right.y) + ", " + std::to_string(right.z);
+			ImGui::Text(text.c_str());
+		}
 	}
 
 	const glm::mat4& Camera::RecalculateView()

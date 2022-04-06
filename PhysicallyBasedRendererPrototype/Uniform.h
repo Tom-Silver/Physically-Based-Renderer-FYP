@@ -8,6 +8,8 @@
 
 namespace TSFYP
 {
+	// Abstract class representing a uniform variable.
+	// Uses a templated child class so that this one can be used to store ambiguous uniforms in one container
 	struct IUniform
 	{
 		std::string name;
@@ -16,6 +18,8 @@ namespace TSFYP
 		virtual void CreateGui() = 0;
 	};
 
+	// Defines the data portion of the uniform.
+	// Acts as the base class for the usable implementations
 	template <typename T>
 	struct Uniform
 		: public IUniform
@@ -26,8 +30,6 @@ namespace TSFYP
 		{
 			shader->SetUniform("material." + name, data);
 		}
-
-		virtual void CreateGui() = 0;
 	};
 
 	struct IntUniform

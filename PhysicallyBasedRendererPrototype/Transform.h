@@ -9,22 +9,8 @@ namespace TSFYP
 	class Transform
 	{
 	public:
-		Transform()
-			: mPos(0.0f, 0.0f, 0.0f)
-			, mRotationAngle(0.0f)
-			, mRotationAxis(0.0f, 1.0f, 0.0f)
-			, mScale(1.0f, 1.0f, 1.0f)
-			, mWorld(1.0f)
-			, mWorldDirty(true)
-		{}
-		Transform(const glm::vec3& pos, const float rotationAngle, const glm::vec3& rotationAxis, const glm::vec3& scale)
-			: mPos(pos)
-			, mRotationAngle(rotationAngle)
-			, mRotationAxis(rotationAxis)
-			, mScale(scale)
-			, mWorld(1.0f)
-			, mWorldDirty(true)
-		{}
+		Transform();
+		Transform(const glm::vec3& pos, const float rotationAngle, const glm::vec3& rotationAxis, const glm::vec3& scale);
 
 		// Accessors //
 		const glm::vec3& pos() const { return mPos; }

@@ -1,5 +1,6 @@
 #include "SceneObject.h"
 
+// Internal includes
 #include "Material.h"
 
 namespace TSFYP

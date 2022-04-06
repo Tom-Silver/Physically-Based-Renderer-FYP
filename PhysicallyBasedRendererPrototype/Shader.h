@@ -17,6 +17,8 @@ namespace TSFYP
 		void Use() const;
 		void Unuse() const;
 
+		void CreateGui();
+
 		void SetUniform(const std::string& name, const bool value) const;
 		void SetUniform(const std::string& name, const int value) const;
 		void SetUniform(const std::string& name, const unsigned int value) const;

@@ -21,5 +21,5 @@ namespace TSFYP
 		float radius, radiusSq;
 	};
 
-	Sphere* CreateSphere(const float radius);
+	Sphere* CreateSphere(const float radius, const unsigned int segmentCircumference);
 }

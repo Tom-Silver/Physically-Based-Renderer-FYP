@@ -8,6 +8,7 @@ struct ImGuiIO;
 
 namespace TSFYP
 {
+	class GuiLayer;
 	class Renderer;
 	struct Scene;
 	struct Window;
@@ -21,9 +22,10 @@ namespace TSFYP
 
 		bool Initialise();
 		void Run();
+		
+		void Quit() { mQuit = true; }
 
 	private:
-		void CreateGui();
 		void HandleInput(float deltaTime);
 
 		bool InitialiseGL();
@@ -33,11 +35,12 @@ namespace TSFYP
 		Window* mWindow;
 		Renderer* mRenderer;
 		Scene* mScene;
+		GuiLayer* mGuiLayer;
 		DeltaTimeClock mDeltaTimeClock;
 		bool mQuit;
 
 		float mLastMouseX, mLastMouseY;
-		float mLastScrollY;
+		float mCurrentZoom;
 
 		ImGuiContext* mGuiContext;
 		ImGuiIO* mGuiIO;

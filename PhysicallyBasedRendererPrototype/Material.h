@@ -14,8 +14,11 @@ namespace TSFYP
 
 	struct Material
 	{
+		~Material();
+
 		void CreateGui();
 
+		std::string name;
 		Shader* shader;
 		std::vector<Texture2D> textures; // While also uniforms, textures get special treatment
 		std::vector<IUniform*> uniforms; // Stores all uniforms of shader for dynamic access

@@ -5,16 +5,8 @@ namespace TSFYP
 	// Stores an RGB colour and defines additive colour mixing operators
 	struct Colour
 	{
-		Colour()
-			: r(0.0f)
-			, g(0.0f)
-			, b(0.0f)
-		{}
-		Colour(const float _r, const float _g, const float _b)
-			: r(_r)
-			, g(_g)
-			, b(_b)
-		{}
+		Colour();
+		Colour(const float _r, const float _g, const float _b);
 
 		float r, g, b;
 

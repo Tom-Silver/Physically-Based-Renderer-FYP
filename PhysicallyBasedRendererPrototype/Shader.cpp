@@ -3,6 +3,7 @@
 // External includes
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <ImGui/imgui.h>
 
 namespace TSFYP
 {
@@ -26,6 +27,18 @@ namespace TSFYP
 	void Shader::Unuse() const
 	{
 		glUseProgram(0);
+	}
+
+	void Shader::CreateGui()
+	{
+		std::string text = "Shader: " + mName;
+		ImGui::Text(text.c_str());
+
+		text = "Vertex path: " + mVertexPath;
+		ImGui::Text(text.c_str());
+
+		text = "Fragment path: " + mFragmentPath;
+		ImGui::Text(text.c_str());
 	}
 
 	void Shader::SetUniform(const std::string& name, const bool value) const

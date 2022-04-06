@@ -13,10 +13,16 @@ namespace TSFYP
 	// Stores the 3D scene to be rendered, including the material sphere, lights, and camera
 	struct Scene
 	{
+		Scene();
+
+		void Update(float deltaTime);
+
 		void CreateGui();
 
 		Camera mCamera;
 		SceneObject mObject;
-		std::vector<Light> mLights; // public to allow access to loop through lights during rendering
+		std::vector<ILight*> mLights;
+
+		float mObjectAutoRotationSpeed;
 	};
 }

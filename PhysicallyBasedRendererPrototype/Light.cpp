@@ -1,31 +1,51 @@
 #include "Light.h"
 
 // External includes
+#include <glm/gtc/type_ptr.hpp>
 #include <ImGui/imgui.h>
 #include <string>
 
+// Internal includes
+#include "Shader.h"
+
 namespace TSFYP
 {
-	Light::Light(const glm::vec3& pos, const glm::vec3& emissionColour)
-		: mPos(pos)
-		, mEmissionColour(emissionColour)
+	ILight::ILight(const glm::vec3& emissionColour, const LightType lightType)
+		: mEmissionColour(emissionColour)
+		, mLightType(lightType)
 	{}
 
-	Light::~Light()
+	PointLight::PointLight(const glm::vec3& pos, const glm::vec3& emissionColour)
+		: ILight(emissionColour, LightType::POINT)
+		, mPos(pos)
 	{}
 
-	void Light::CreateGui()
+	void PointLight::Set(Shader* shader, int i)
 	{
-		// Pos
-		{
-			std::string text = "Pos: " + std::to_string(mPos.x) + ", " + std::to_string(mPos.y) + ", " + std::to_string(mPos.z);
-			ImGui::Text(text.c_str());
-		}
+		shader->SetUniform("pointLights[" + std::to_string(i) + "].position", mPos);
+		shader->SetUniform("pointLights[" + std::to_string(i) + "].emittedColour", mEmissionColour);
+	}
 
-		// Emitted colour
-		{
-			std::string text = "Emitted colour: " + std::to_string(mEmissionColour.x) + ", " + std::to_string(mEmissionColour.y) + ", " + std::to_string(mEmissionColour.z);
-			ImGui::Text(text.c_str());
-		}
+	void PointLight::CreateGui()
+	{
+		ImGui::ColorPicker3("Emitted colour", glm::value_ptr(mEmissionColour));
+		ImGui::DragFloat3("Light pos", glm::value_ptr(mPos));
+	}
+
+	DirectionalLight::DirectionalLight(const glm::vec3& dir, const glm::vec3& emissionColour)
+		: ILight(emissionColour, LightType::DIRECTIONAL)
+		, mDir(dir)
+	{}
+
+	void DirectionalLight::Set(Shader* shader, int i)
+	{
+		shader->SetUniform("directionalLights[" + std::to_string(i) + "].direction", mDir);
+		shader->SetUniform("directionalLights[" + std::to_string(i) + "].emittedColour", mEmissionColour);
+	}
+
+	void DirectionalLight::CreateGui()
+	{
+		ImGui::ColorPicker3("Emitted colour", glm::value_ptr(mEmissionColour));
+		ImGui::DragFloat3("Light dir", glm::value_ptr(mDir));
 	}
 }

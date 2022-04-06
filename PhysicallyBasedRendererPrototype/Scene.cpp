@@ -1,20 +1,63 @@
 #include "Scene.h"
 
 // External includes
-#include <limits>
+#include <ImGui/imgui.h>
+#include <string>
 
 // Internal includes
 #include "Sphere.h"
 
 namespace TSFYP
 {
+	Scene::Scene()
+		: mCamera()
+		, mObject()
+		, mLights()
+		, mObjectAutoRotationSpeed(0.1f)
+	{}
+
+	void Scene::Update(float deltaTime)
+	{
+		float oldAngle = mObject.transform->rotationAngle();
+		float newAngle = oldAngle + (mObjectAutoRotationSpeed * deltaTime);
+		mObject.transform->SetRotationAngle(newAngle);
+	}
+
 	void Scene::CreateGui()
 	{
-		mCamera.CreateGui();
+		static ILight* currentLight = nullptr;
+		static std::string previewName = "Light selection";
+
 		mObject.CreateGui();
-		for (Light& light : mLights)
+
+		if (ImGui::Begin("Environment Info"))
 		{
-			light.CreateGui();
+			mCamera.CreateGui();
+
+			ImGui::Separator();
+
+			// Light selection combo box
+			if (ImGui::BeginCombo("Lights", previewName.c_str()))
+			{
+				for (int i = 0; i < mLights.size(); i++)
+				{
+					bool isSelected = (currentLight == mLights[i]);
+					if (ImGui::Selectable(std::to_string(i).c_str(), isSelected))
+					{
+						currentLight = mLights[i];
+						previewName = std::to_string(i);
+					}
+				}
+
+				ImGui::EndCombo();
+			}
+
+			if (currentLight)
+			{
+				currentLight->CreateGui();
+			}
+			
+			ImGui::End();
 		}
 	}
 }

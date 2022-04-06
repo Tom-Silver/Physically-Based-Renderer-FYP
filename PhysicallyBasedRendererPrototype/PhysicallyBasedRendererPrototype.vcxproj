@@ -156,10 +156,13 @@
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Colour.cpp" />
+    <ClCompile Include="Cube.cpp" />
     <ClCompile Include="DeltaTimeClock.cpp" />
+    <ClCompile Include="GuiLayer.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Material.cpp" />
+    <ClCompile Include="MaterialLoader.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneObject.cpp" />
@@ -183,9 +186,12 @@
     <ClInclude Include="Application.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Colour.h" />
+    <ClInclude Include="Cube.h" />
     <ClInclude Include="DeltaTimeClock.h" />
+    <ClInclude Include="GuiLayer.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Material.h" />
+    <ClInclude Include="MaterialLoader.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneObject.h" />
@@ -200,8 +206,10 @@
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="basicPBRFS.glsl" />
-    <None Include="basicPBRVS.glsl" />
+    <None Include="Resources\Shaders\equirectangularToCubemapFS.glsl" />
+    <None Include="Resources\Shaders\equirectangularToCubemapVS.glsl" />
+    <None Include="Resources\Shaders\basicPBRFS.glsl" />
+    <None Include="Resources\Shaders\basicPBRVS.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

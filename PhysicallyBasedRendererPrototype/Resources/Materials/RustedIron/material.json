@@ -1,0 +1,37 @@
+{
+	"name": "RustedIron",
+	"shader": {
+		"fragment": "basicPBRFS",
+		"name": "basicPBR",
+		"vertex": "basicPBRVS"
+	},
+	"textures": [
+		{
+			"fileName": "albedo.png",
+			"name": "albedo",
+			"type": 0
+		},
+		{
+			"fileName": "normal.png",
+			"name": "normal",
+			"type": 1
+		},
+		{
+			"fileName": "metallic.png",
+			"name": "metallic",
+			"type": 2
+		},
+		{
+			"fileName": "roughness.png",
+			"name": "roughness",
+			"type": 3
+		},
+		{
+			"fileName": "ao.png",
+			"name": "ao",
+			"type": 4
+		}
+	],
+	"uniforms":
+	[]
+}

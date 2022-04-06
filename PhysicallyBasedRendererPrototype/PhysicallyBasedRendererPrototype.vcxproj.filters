@@ -58,6 +58,12 @@
     <Filter Include="Source Files\Scene">
       <UniqueIdentifier>{e9f91aec-3625-45d6-9076-faee88730e70}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Material">
+      <UniqueIdentifier>{35df3724-ec89-486a-9e56-d9f94f8131a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Material">
+      <UniqueIdentifier>{ce8481b5-cb4c-49e2-a0b8-f4d338ed026e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp">
@@ -73,12 +79,6 @@
       <Filter>Source Files\Basics</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Material.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Transform.cpp">
@@ -129,8 +129,23 @@
     <ClCompile Include="Camera.cpp">
       <Filter>Source Files\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>Source Files\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>Source Files\Material</Filter>
+    </ClCompile>
     <ClCompile Include="Uniform.cpp">
+      <Filter>Source Files\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialLoader.cpp">
+      <Filter>Source Files\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="GuiLayer.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Cube.cpp">
+      <Filter>Source Files\Meshes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -148,12 +163,6 @@
     </ClInclude>
     <ClInclude Include="Sphere.h">
       <Filter>Header Files\Meshes</Filter>
-    </ClInclude>
-    <ClInclude Include="Material.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Shader.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Mesh.h">
       <Filter>Header Files\Meshes</Filter>
@@ -212,15 +221,36 @@
     <ClInclude Include="Camera.h">
       <Filter>Header Files\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Header Files\Material</Filter>
+    </ClInclude>
     <ClInclude Include="Uniform.h">
+      <Filter>Header Files\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>Header Files\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="GuiLayer.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialLoader.h">
+      <Filter>Header Files\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Cube.h">
+      <Filter>Header Files\Meshes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="basicPBRVS.glsl">
+    <None Include="Resources\Shaders\basicPBRFS.glsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
-    <None Include="basicPBRFS.glsl">
+    <None Include="Resources\Shaders\basicPBRVS.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\equirectangularToCubemapVS.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\equirectangularToCubemapFS.glsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
   </ItemGroup>

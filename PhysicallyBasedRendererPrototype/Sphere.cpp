@@ -7,8 +7,9 @@
 
 namespace TSFYP
 {
-    Sphere* CreateSphere(const float radius)
+    Sphere* CreateSphere(const float radius, const unsigned int segmentCircumference)
     {
+        // Create buffer objects
         unsigned int vao = 0;
         glGenVertexArrays(1, &vao);
 
@@ -18,25 +19,20 @@ namespace TSFYP
         unsigned int ebo = 0;
         glGenBuffers(1, &ebo);
 
+        // Generate vertices
         std::vector<glm::vec3> vertexPositions;
         std::vector<glm::vec2> vertexTexCoords;
         std::vector<glm::vec3> vertexNormals;
-        std::vector<unsigned int> indices;
-
-        const unsigned int xSegments = 128;
-        const unsigned int ySegments = 128;
-
-        // Generate vertices
         {
             const float pi = 3.14159265359f;
 
-            for (unsigned int x = 0; x <= xSegments; x++)
+            for (unsigned int x = 0; x <= segmentCircumference; x++)
             {
-                float xSegment = (float)x / (float)xSegments;
+                float xSegment = (float)x / (float)segmentCircumference;
 
-                for (unsigned int y = 0; y <= ySegments; y++)
+                for (unsigned int y = 0; y <= segmentCircumference; y++)
                 {
-                    float ySegment = (float)y / (float)ySegments;
+                    float ySegment = (float)y / (float)segmentCircumference;
                     float xPos = cosf(xSegment * 2.0f * pi) * sinf(ySegment * pi);
                     float yPos = cosf(ySegment * pi);
                     float zPos = sinf(xSegment * 2.0f * pi) * sinf(ySegment * pi);
@@ -50,24 +46,25 @@ namespace TSFYP
 
         // Generate indices
         unsigned int indexCount = 0;
+        std::vector<unsigned int> indices;
         {
             bool oddRow = false;
-            for (unsigned int y = 0; y < ySegments; y++)
+            for (unsigned int y = 0; y < segmentCircumference; y++)
             {
                 if (oddRow)
                 {
-                    for (int x = xSegments; x >= 0; x--)
+                    for (int x = segmentCircumference; x >= 0; x--)
                     {
-                        indices.emplace_back((y + 1) * (xSegments + 1) + x);
-                        indices.emplace_back(y * (xSegments + 1) + x);
+                        indices.emplace_back((y + 1) * (segmentCircumference + 1) + x);
+                        indices.emplace_back(y * (segmentCircumference + 1) + x);
                     }
                 }
                 else
                 {
-                    for (unsigned int x = 0; x <= xSegments; x++)
+                    for (unsigned int x = 0; x <= segmentCircumference; x++)
                     {
-                        indices.emplace_back(y * (xSegments + 1) + x);
-                        indices.emplace_back((y + 1) * (xSegments + 1) + x);
+                        indices.emplace_back(y * (segmentCircumference + 1) + x);
+                        indices.emplace_back((y + 1) * (segmentCircumference + 1) + x);
                     }
                 }
 
@@ -97,17 +94,19 @@ namespace TSFYP
             }
         }
 
-        // Set buffer data
         {
             glBindVertexArray(vao);
 
+            // Set buffer data
             glBindBuffer(GL_ARRAY_BUFFER, vbo);
             glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), &data[0], GL_STATIC_DRAW);
 
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
 
-            unsigned int stride = (3 + 2 + 3) * sizeof(float); // Pos + tex + normal
+            // Link vertex attribs
+            unsigned int stride = (3 + 3 + 2) * sizeof(float); // Pos + normal + tex
+
             glEnableVertexAttribArray(0);
             glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
 
@@ -116,6 +115,9 @@ namespace TSFYP
 
             glEnableVertexAttribArray(2);
             glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, (void*)(6 * sizeof(float)));
+
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBindVertexArray(0);
         }
 
         return new Sphere(vao, indexCount, radius);

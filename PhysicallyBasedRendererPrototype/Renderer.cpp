@@ -6,6 +6,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <ImGui/imgui_impl_opengl3.h>
 #include <iostream>
 
@@ -54,7 +55,9 @@ namespace TSFYP
 	}
 
 	void Renderer::CreateGui()
-	{}
+	{
+		ImGui::ColorPicker3("Clear colour", glm::value_ptr(mClearColour));
+	}
 
 	bool Renderer::Initialise(Window* windowPtr, Scene* scene)
 	{
@@ -140,16 +143,29 @@ namespace TSFYP
 		glm::vec3 camPos = scene->mCamera.pos();
 		shader->SetUniform("camPos", camPos);
 
+		unsigned int pointNo = 0;
+		unsigned int directionalNo = 0;
+		unsigned int spotNo = 0;
 		for (unsigned int i = 0; i < noLights; i++)
 		{
-			Light& light = scene->mLights[i];
-
-			glm::vec3 pos = light.pos();
-			glm::vec3 emittedColour = light.emittedColour();
-
-			shader->SetUniform("lightPositions[" + std::to_string(i) + "]", pos);
-			shader->SetUniform("lightColours[" + std::to_string(i) + "]", emittedColour);
+			ILight* light = scene->mLights[i];
+			switch (light->lightType())
+			{
+			case ILight::LightType::POINT:
+				light->Set(shader, pointNo++);
+				break;
+			case ILight::LightType::DIRECTIONAL:
+				light->Set(shader, directionalNo++);
+				break;
+			case ILight::LightType::SPOT:
+				light->Set(shader, spotNo++);
+				break;
+			}
 		}
+
+		shader->SetUniform("noPoint", pointNo);
+		shader->SetUniform("noDirectional", directionalNo);
+		shader->SetUniform("noSpot", spotNo);
 	}
 
 	void SetMaterialUniforms(const Material* material)

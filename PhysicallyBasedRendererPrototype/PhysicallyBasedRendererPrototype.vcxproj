@@ -206,6 +206,8 @@
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\Shaders\blinnPhongFS.glsl" />
+    <None Include="Resources\Shaders\blinnPhongVS.glsl" />
     <None Include="Resources\Shaders\equirectangularToCubemapFS.glsl" />
     <None Include="Resources\Shaders\equirectangularToCubemapVS.glsl" />
     <None Include="Resources\Shaders\basicPBRFS.glsl" />

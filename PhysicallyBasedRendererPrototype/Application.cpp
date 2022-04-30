@@ -354,6 +354,7 @@ namespace TSFYP
 
 	bool ConvertEquirectangularToCubemap()
 	{
+		return true;
 		Texture2D equirectangularTexture = CreateTexture2DFloat("environmentmap", Texture2D::TextureType::ALBEDO, "Resources/Environments/RidgecrestRoad/Ridgecrest_Road_Env.hdr");
 
 		Texture2D cubemap = CreateEmptyCubemap("environmentcubemap");

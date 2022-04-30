@@ -8,7 +8,8 @@
 namespace TSFYP
 {
 	class Renderer;
-	class Scene;
+	struct Scene;
+	struct Window;
 
 	struct IGuiObject
 	{
@@ -25,7 +26,7 @@ namespace TSFYP
 	class GuiLayer
 	{
 	public:
-		GuiLayer(Renderer* renderer, Scene* scene);
+		GuiLayer(Renderer* renderer, Scene* scene, Window* window);
 
 		void CreateGui();
 
@@ -33,10 +34,12 @@ namespace TSFYP
 		// Stores pointers to gui objects for dynamic adding/removing of windows
 		std::vector<IGuiObject*> mGuiObjects;
 
-		std::list<std::string> mRecentMaterials; // Stores last 3 loaded materials
+		std::list<std::string> mRecentMaterials; // Stores recently loaded materials for quick access
+		std::list<std::string> mRecentEnvironments; // Stores recently loaded environments for quick access
 
-		// Pointers for calling CreateGui()
+		// Pointers for access to other areas of the application
 		Renderer* pRenderer;
+		Window* pWindow;
 		Scene* pScene;
 	};
 }

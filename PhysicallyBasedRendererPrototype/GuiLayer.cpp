@@ -4,12 +4,15 @@
 #include <ImGui/imgui.h>
 
 // Internal includes
+#include "Environment.h"
+#include "EnvironmentLoader.h"
 #include "Material.h"
 #include "MaterialLoader.h"
 #include "Renderer.h"
 #include "Scene.h"
 
 #define MAX_RECENT_MATERIALS 5
+#define MAX_RECENT_ENVIRONMENTS 5
 
 namespace TSFYP
 {
@@ -39,6 +42,13 @@ namespace TSFYP
 					LoadFromInput();
 				}
 
+				ImGui::SameLine();
+
+				if (ImGui::Button("Cancel"))
+				{
+					close = true;
+				}
+
 				ImGui::End();
 			}
 		}
@@ -52,16 +62,75 @@ namespace TSFYP
 			if (newMaterial)
 			{
 				delete* pMaterial;
-				*pMaterial = LoadMaterial(name);
+				*pMaterial = newMaterial;
+			
+				AddNameToUniqueQueueList(pRecentMaterials, name, MAX_RECENT_MATERIALS);
 			}
-
-			AddNameToUniqueQueueList(pRecentMaterials, name, MAX_RECENT_MATERIALS);
 
 			close = true;
 		}
 
 		Material** const pMaterial;
 		std::list<std::string>* pRecentMaterials;
+		char input[128];
+	};
+
+	struct LoadEnvironmentWindow
+		: public IGuiObject
+	{
+	public:
+		LoadEnvironmentWindow(Environment** const environmentPtr, std::list<std::string>* recentEnvironmentsPtr, Window* windowPtr)
+			: pEnvironment(environmentPtr)
+			, pRecentEnvironments(recentEnvironmentsPtr)
+			, input("")
+			, pWindow(windowPtr)
+		{}
+
+		virtual void CreateGui() override
+		{
+			if (ImGui::Begin("Load environment"))
+			{
+				if (ImGui::InputText("Environment name", input, IM_ARRAYSIZE(input), ImGuiInputTextFlags_EnterReturnsTrue))
+				{
+					LoadFromInput();
+				}
+
+				if (ImGui::Button("Load environment"))
+				{
+					LoadFromInput();
+				}
+
+				ImGui::SameLine();
+
+				if (ImGui::Button("Cancel"))
+				{
+					close = true;
+				}
+
+				ImGui::End();
+			}
+		}
+
+	private:
+		void LoadFromInput()
+		{
+			std::string name = std::string(input);
+
+			Environment* newEnvironment = LoadEnvironment(name, pWindow);
+			if (newEnvironment)
+			{
+				delete* pEnvironment;
+				*pEnvironment = newEnvironment;
+
+				AddNameToUniqueQueueList(pRecentEnvironments, name, MAX_RECENT_ENVIRONMENTS);
+			}
+
+			close = true;
+		}
+
+		Environment** const pEnvironment;
+		Window* pWindow;
+		std::list<std::string>* pRecentEnvironments;
 		char input[128];
 	};
 
@@ -93,9 +162,10 @@ namespace TSFYP
 		std::string title, text;
 	};
 
-	GuiLayer::GuiLayer(Renderer* renderer, Scene* scene)
+	GuiLayer::GuiLayer(Renderer* renderer, Scene* scene, Window* window)
 		: pRenderer(renderer)
 		, pScene(scene)
+		, pWindow(window)
 	{}
 
 	void GuiLayer::CreateGui()
@@ -186,8 +256,47 @@ namespace TSFYP
 
 				if (ImGui::MenuItem("Load environment..."))
 				{
-
+					mGuiObjects.emplace_back(new LoadEnvironmentWindow(&pScene->mEnvironment, &mRecentEnvironments, pWindow));
 				}
+
+				if (ImGui::BeginMenu("Load recent environment"))
+				{
+					int i = 0; // Predeclare the iterator variable so we can increment it beforehand
+
+					// Display all recent items
+					std::string toAdd = "";
+					for (std::string name : mRecentEnvironments)
+					{
+						if (ImGui::MenuItem(name.c_str()))
+						{
+							Environment* newEnvironment = LoadEnvironment(name, pWindow);
+							if (newEnvironment)
+							{
+								delete pScene->mEnvironment;
+								pScene->mEnvironment = newEnvironment;
+							}
+
+							toAdd = name;
+						}
+
+						i++; // Increment for each slot used
+					}
+
+					if (!toAdd.empty())
+					{
+						AddNameToUniqueQueueList(&mRecentEnvironments, toAdd, MAX_RECENT_ENVIRONMENTS);
+					}
+
+					// Display any remaining slots as empty using preincremented iterator variable
+					for (i; i < MAX_RECENT_ENVIRONMENTS; i++)
+					{
+						if (ImGui::MenuItem("-")) {}
+					}
+
+
+					ImGui::EndMenu();
+				}
+
 				ImGui::EndMenu();
 			}
 

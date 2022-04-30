@@ -27,9 +27,12 @@ namespace TSFYP
 
 	private:
 		void RenderSceneObject(SceneObject* sceneObject, Scene* scene);
+		void RenderSkybox(Scene* scene);
+
 		void SetLightShaderData(Scene* scene, Shader* shader);
 
 		Scene* pScene;
+		Shader* mSkyboxShader;
 		glm::vec3 mClearColour;
 		Window* pWindow;
 	};

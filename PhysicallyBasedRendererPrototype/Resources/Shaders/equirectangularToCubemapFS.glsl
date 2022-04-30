@@ -22,7 +22,7 @@ vec2 SampleSphericalMap(vec3 dir)
 
 void main()
 {
-	vec2 texCoords = SampleSphericalMap(normalize(worldPos));
+	vec2 texCoords = SampleSphericalMap(normalize(fInput.worldPos));
 	vec3 colour = texture(equirectangularMap, texCoords).rgb;
 
 	fragColour = vec4(colour, 1.0);

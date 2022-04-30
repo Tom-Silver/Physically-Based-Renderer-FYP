@@ -1,0 +1,10 @@
+{
+	"name": "milkyWay",
+	"background": {
+		"fileName": "background.jpg",
+		"name": "milkyWayBackground",
+		"type": 0
+	},
+	"lights": [
+	]
+}

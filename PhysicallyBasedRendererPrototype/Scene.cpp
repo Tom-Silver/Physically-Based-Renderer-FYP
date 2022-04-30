@@ -12,7 +12,6 @@ namespace TSFYP
 	Scene::Scene()
 		: mCamera()
 		, mObject()
-		, mLights()
 		, mObjectAutoRotationSpeed(0.1f)
 	{}
 
@@ -39,12 +38,12 @@ namespace TSFYP
 			// Light selection combo box
 			if (ImGui::BeginCombo("Lights", previewName.c_str()))
 			{
-				for (int i = 0; i < mLights.size(); i++)
+				for (int i = 0; i < mEnvironment->mLights.size(); i++)
 				{
-					bool isSelected = (currentLight == mLights[i]);
+					bool isSelected = (currentLight == mEnvironment->mLights[i]);
 					if (ImGui::Selectable(std::to_string(i).c_str(), isSelected))
 					{
-						currentLight = mLights[i];
+						currentLight = mEnvironment->mLights[i];
 						previewName = std::to_string(i);
 					}
 				}

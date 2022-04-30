@@ -5,8 +5,11 @@
 
 // Internal includes
 #include "Camera.h"
+#include "Cube.h"
+#include "Environment.h"
 #include "Light.h"
 #include "SceneObject.h"
+#include "Texture2D.h"
 
 namespace TSFYP
 {
@@ -21,7 +24,10 @@ namespace TSFYP
 
 		Camera mCamera;
 		SceneObject mObject;
-		std::vector<ILight*> mLights;
+
+		// For IBL
+		Cube* mSkyboxMesh;
+		Environment* mEnvironment;
 
 		float mObjectAutoRotationSpeed;
 	};

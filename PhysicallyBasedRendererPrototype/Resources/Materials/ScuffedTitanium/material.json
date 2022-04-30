@@ -1,7 +1,7 @@
 {
 	"name": "ScuffedTitanium",
 	"shader": {
-		"fragment": "basicPBRFS",
+		"fragment": "imageBasedLightingPBRFS",
 		"name": "basicPBR",
 		"vertex": "basicPBRVS"
 	},

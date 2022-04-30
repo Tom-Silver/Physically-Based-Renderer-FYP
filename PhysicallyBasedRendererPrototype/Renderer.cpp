@@ -16,6 +16,7 @@
 #include "Mesh.h"
 #include "Scene.h"
 #include "Shader.h"
+#include "ShaderCompiler.h"
 #include "Transform.h"
 #include "Window.h"
 
@@ -46,6 +47,8 @@ namespace TSFYP
 
 		RenderSceneObject(&pScene->mObject, pScene);
 
+		RenderSkybox(pScene);
+
 		// Render ImGui after scene so it appears above it
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -66,6 +69,9 @@ namespace TSFYP
 		
 		if (!scene) { return false; }
 		pScene = scene;
+
+		mSkyboxShader = CreateShader("skybox", "Resources/Shaders/skyboxVS.glsl", "Resources/Shaders/skyboxFS.glsl");
+		mSkyboxShader->SetUniform("environmentMap", 0);
 
 		return true;
 	}
@@ -125,6 +131,16 @@ namespace TSFYP
 			glBindTexture(GL_TEXTURE_2D, texture.id);
 		}
 
+		// If using IBL, try to set irradiance map uniform
+		if (scene->mEnvironment->mIrradianceMap.id != 0)
+		{
+			int textureNo = sceneObject->material->textures.size(); // Use the next slot after the final material texture is bound
+			shader->SetUniform("irradianceMap", textureNo);
+
+			glActiveTexture(GL_TEXTURE0 + textureNo);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, scene->mEnvironment->mIrradianceMap.id);
+		}
+
 		// Bind VAO and draw
 		glBindVertexArray(sceneObject->mesh->vao);
 		glDrawElements(GL_TRIANGLE_STRIP, sceneObject->mesh->indexCount, GL_UNSIGNED_INT, 0);
@@ -135,9 +151,34 @@ namespace TSFYP
 		glActiveTexture(GL_TEXTURE0);
 	}
 
+	void  Renderer::RenderSkybox(Scene* scene)
+	{
+		mSkyboxShader->Use();
+
+		glm::mat4 projection = scene->mCamera.projection();
+		mSkyboxShader->SetUniform("projection", projection);
+
+		glm::mat4 view = scene->mCamera.view();
+		mSkyboxShader->SetUniform("view", view);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, scene->mEnvironment->mBackground.id);
+
+		glBindVertexArray(scene->mSkyboxMesh->vao);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindVertexArray(0);
+
+		mSkyboxShader->Unuse();
+	}
+
 	void Renderer::SetLightShaderData(Scene* scene, Shader* shader)
 	{
-		unsigned int noLights = scene->mLights.size();
+		if (!scene->mEnvironment)
+		{
+			return;
+		}
+
+		unsigned int noLights = scene->mEnvironment->mLights.size();
 		shader->SetUniform("noLights", noLights);
 
 		glm::vec3 camPos = scene->mCamera.pos();
@@ -148,7 +189,7 @@ namespace TSFYP
 		unsigned int spotNo = 0;
 		for (unsigned int i = 0; i < noLights; i++)
 		{
-			ILight* light = scene->mLights[i];
+			ILight* light = scene->mEnvironment->mLights[i];
 			switch (light->lightType())
 			{
 			case ILight::LightType::POINT:

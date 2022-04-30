@@ -158,6 +158,7 @@
     <ClCompile Include="Colour.cpp" />
     <ClCompile Include="Cube.cpp" />
     <ClCompile Include="DeltaTimeClock.cpp" />
+    <ClCompile Include="EnvironmentLoader.cpp" />
     <ClCompile Include="GuiLayer.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="main.cpp" />
@@ -188,6 +189,8 @@
     <ClInclude Include="Colour.h" />
     <ClInclude Include="Cube.h" />
     <ClInclude Include="DeltaTimeClock.h" />
+    <ClInclude Include="Environment.h" />
+    <ClInclude Include="EnvironmentLoader.h" />
     <ClInclude Include="GuiLayer.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Material.h" />
@@ -212,6 +215,10 @@
     <None Include="Resources\Shaders\equirectangularToCubemapVS.glsl" />
     <None Include="Resources\Shaders\basicPBRFS.glsl" />
     <None Include="Resources\Shaders\basicPBRVS.glsl" />
+    <None Include="Resources\Shaders\imageBasedLightingPBRFS.glsl" />
+    <None Include="Resources\Shaders\irradianceConvolutionFS.glsl" />
+    <None Include="Resources\Shaders\skyboxFS.glsl" />
+    <None Include="Resources\Shaders\skyboxVS.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

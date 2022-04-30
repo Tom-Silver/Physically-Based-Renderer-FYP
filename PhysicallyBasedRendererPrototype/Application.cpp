@@ -8,6 +8,8 @@
 #include <ImGui/imgui_impl_glfw.h>
 
 // Internal includes
+#include "Cube.h"
+#include "EnvironmentLoader.h"
 #include "GuiLayer.h"
 #include "MaterialLoader.h"
 #include "Renderer.h"
@@ -40,7 +42,6 @@ namespace TSFYP
 	// Other prototypes
 	bool InitialiseGLFW(GLFWwindow** windowPtr);
 	bool InitialiseGlad();
-	bool ConvertEquirectangularToCubemap();
 
 	// GLFW callbacks
 	void GLFWErrorCallback(int error, const char* description);
@@ -217,11 +218,13 @@ namespace TSFYP
 		if (!mRenderer->Initialise(mWindow, mScene)) { return false; }
 		mRenderer->SetClearColour(glm::vec3(0.2f, 0.2f, 0.2f));
 		
-		// Load HDR environment map and create cubemap, then convert environment map to cubemap
-		ConvertEquirectangularToCubemap();
+		// Creates environment and irradiance cubemaps and gives their ids to the scene
+		mScene->mSkyboxMesh = CreateCube();
+		mScene->mEnvironment = LoadEnvironment("RidgecrestRoad", mWindow);
+		//CreateEnvironment();
 
 		// Initialise gui layer
-		mGuiLayer = new GuiLayer(mRenderer, mScene);
+		mGuiLayer = new GuiLayer(mRenderer, mScene, mWindow);
 
 		return true;
 	}
@@ -283,6 +286,7 @@ namespace TSFYP
 		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		//glEnable(GL_CULL_FACE);
 		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LEQUAL);
 		//glEnable(GL_MULTISAMPLE);
 
 		return true;
@@ -341,45 +345,7 @@ namespace TSFYP
 			object.transform = new Transform(pos, rotationAngle, rotationAxis, scale);
 		}
 
-		// Initialise scene lights
-		{
-			glm::vec3 pos(-10.0f, 10.0f, -10.0f);
-			glm::vec3 emittedColour(1.0f, 1.0f, 1.0f);
-
-			mScene->mLights.emplace_back(new PointLight(pos, emittedColour));
-		}
-
 		return true;
-	}
-
-	bool ConvertEquirectangularToCubemap()
-	{
-		return true;
-		Texture2D equirectangularTexture = CreateTexture2DFloat("environmentmap", Texture2D::TextureType::ALBEDO, "Resources/Environments/RidgecrestRoad/Ridgecrest_Road_Env.hdr");
-
-		Texture2D cubemap = CreateEmptyCubemap("environmentcubemap");
-
-		glm::mat4 captureViews[] =
-		{
-			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
-			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
-			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
-		};
-		glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
-
-		Shader* equirectangularToCubemapShader = CreateShader("equirectangularToCubemap", "equirectangularToCubemapVS.glsl", "equirectangularToCubemapFS.glsl");
-		equirectangularToCubemapShader->Use();
-		equirectangularToCubemapShader->SetUniform("equirectangularMap", 0);
-		equirectangularToCubemapShader->SetUniform("projection", captureProjection);
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, equirectangularTexture.id);
-
-		glViewport(0, 0, 512, 512); // Set viewport to dimensions of the capture (512x512)
-		//glBindFramebuffer(GL_FRAMEBUFFER, );
 	}
 
 	void GLFWErrorCallback(int error, const char* description)

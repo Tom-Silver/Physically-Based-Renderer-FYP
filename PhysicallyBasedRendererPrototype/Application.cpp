@@ -58,6 +58,7 @@ namespace TSFYP
 		, mGuiIO(nullptr)
 		, mGuiLayer(nullptr)
 		, mCurrentZoom(1.0f)
+		, mShowGUI(true)
 	{}
 
 	Application::~Application()
@@ -92,7 +93,10 @@ namespace TSFYP
 			ImGui_ImplGlfw_NewFrame();
 			ImGui::NewFrame();
 
-			mGuiLayer->CreateGui();
+			if (mShowGUI)
+			{
+				mGuiLayer->CreateGui();
+			}
 
 			HandleInput(deltaTime);
 
@@ -107,6 +111,12 @@ namespace TSFYP
 	void Application::HandleInput(float deltaTime)
 	{
 		ImVec2 mousePos = ImGui::GetMousePos();
+
+		// Press escape to toggle GUI
+		if (ImGui::IsKeyPressed(ImGuiKey_Escape))
+		{
+			mShowGUI = !mShowGUI;
+		}
 
 		// Arcball camera rotation
 		if (ImGui::IsMouseDown(ImGuiMouseButton_Left)/* && !ImGui::IsWindowHovered() && !ImGui::IsAnyItemHovered()*/)
@@ -257,7 +267,7 @@ namespace TSFYP
 
 		// Set window hints before creating window
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4); // Using OpenGL 4.6
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6); //
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3); //
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // Using OpenGL Core
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // Window not resizable
 
@@ -305,6 +315,8 @@ namespace TSFYP
 
 		// Set style
 		ImGui::StyleColorsDark();
+
+		return true;
 	}
 
 	bool Application::InitialiseScene()

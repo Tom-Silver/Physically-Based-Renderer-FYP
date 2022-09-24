@@ -1,4 +1,4 @@
-#version 460 core
+#version 430 core
 
 in VSOutput
 {
@@ -112,11 +112,9 @@ LightingResult DoPointLight(PointLight light, vec3 vertexToEye, vec3 vertexToLig
 
 LightingResult DoDirectionalLight(DirectionalLight light, vec3 vertexToEye, vec3 vertexToLight, vec3 normal)
 {
-    vertexToLight = -vertexToLight;
-
     LightingResult result = { { 0, 0, 0, 0 }, { 0, 0, 0, 0 } };
 	
-    float attenuation = 0.5;
+    float attenuation = 1.0;
 	
     result.Diffuse = DoDiffuse(light.emittedColour, vertexToLight, normal) * attenuation;
     result.Specular = DoSpecular(vertexToEye, vertexToLight, normal) * attenuation;
@@ -166,7 +164,7 @@ vec3 BlinnPhong(vec3 normal, vec3 vertexPos)
     {
         LightingResult result = { { 0, 0, 0, 0 }, { 0, 0, 0, 0 } };
 		
-        vec3 vertexToLight = pointLights[i].position - vertexPos;
+        vec3 vertexToLight = -directionalLights[i].direction;
 
         result = DoDirectionalLight(directionalLights[i], vertexToEye, vertexToLight, normal);
 
@@ -178,7 +176,7 @@ vec3 BlinnPhong(vec3 normal, vec3 vertexPos)
     {
         LightingResult result = { { 0, 0, 0, 0 }, { 0, 0, 0, 0 } };
 		
-        vec3 vertexToLight = pointLights[i].position - vertexPos;
+        vec3 vertexToLight = spotLights[i].position - vertexPos;
 
         result = DoSpotLight(spotLights[i], vertexToEye, vertexToLight, normal);
 
@@ -186,7 +184,7 @@ vec3 BlinnPhong(vec3 normal, vec3 vertexPos)
         totalResult.Specular += result.Specular;
     }
 
-    vec4 ambient = vec4(0.15, 0.15, 0.15, 1.0);
+    vec4 ambient = vec4(0.4, 0.4, 0.4, 1.0);
     totalResult.Diffuse = clamp(totalResult.Diffuse, 0, 1);
     totalResult.Specular = clamp(totalResult.Specular, 0, 1);
 

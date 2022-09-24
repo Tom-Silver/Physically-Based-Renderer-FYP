@@ -38,6 +38,7 @@ namespace TSFYP
 		GuiLayer* mGuiLayer;
 		DeltaTimeClock mDeltaTimeClock;
 		bool mQuit;
+		bool mShowGUI;
 
 		float mLastMouseX, mLastMouseY;
 		float mCurrentZoom;

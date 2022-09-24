@@ -12,7 +12,9 @@ namespace TSFYP
 	Scene::Scene()
 		: mCamera()
 		, mObject()
-		, mObjectAutoRotationSpeed(0.1f)
+		, mObjectAutoRotationSpeed(0.2f)
+		, mEnvironment(nullptr)
+		, mSkyboxMesh(nullptr)
 	{}
 
 	void Scene::Update(float deltaTime)

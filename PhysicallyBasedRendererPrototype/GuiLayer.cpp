@@ -300,23 +300,53 @@ namespace TSFYP
 				ImGui::EndMenu();
 			}
 
-			if (ImGui::BeginMenu("Edit"))
-			{
-				ImGui::EndMenu();
-			}
-
-			if (ImGui::BeginMenu("View"))
-			{
-				
-
-				ImGui::EndMenu();
-			}
-
 			if (ImGui::BeginMenu("Help"))
 			{
 				if (ImGui::MenuItem("Controls"))
 				{
-					mGuiObjects.emplace_back(new TextWindow("Controls", "Hold left click and drag to orbit the camera around the material object\nHold right click and drag to rotate the material object on the Y axis\nScroll the mousewheel to zoom in and out"));
+					std::string text("Hold left click and drag to orbit the camera around the material object.");
+					text += "\nHold right click and drag to rotate the material object on the Y axis.";
+					text += "\nScroll the mousewheel to zoom in and out.";
+					mGuiObjects.emplace_back(new TextWindow("Controls", text));
+				}
+				if (ImGui::MenuItem("How to use"))
+				{
+					std::string text("This is an application for viewing materials using physically based rendering shaders.");
+					text += "\n\nTo load a material, click on 'File' on the top menu bar, then 'Load material', and\nenter the name of the material into the dialog box that appears.";
+					text += "\n\nA recently loaded material can also be reloaded via clicking 'File', then\n'Load recent material', and clicking on the name of the material.";
+					text += "\n\nTo load a different environment (background, ambient lighting, scene lights),\nclick on 'File', then 'Load environment', and enter the name of the environment into\nthe dialog box that appears.";
+					text += "\n\nA recently loaded environment can also be reloaded via clicking 'File', then\n'Load recent environment', and clicking on the name of the environment.";
+					text += "\n\nFor a list of materials and environments supplied with the application,\nclick 'Help', then 'Materials and environments'.";
+					text += "\nThanks for looking at my material viewer application!";
+					mGuiObjects.emplace_back(new TextWindow("How to use", text));
+				}
+				if (ImGui::MenuItem("Materials and environments"))
+				{
+					std::string text("Materials:");
+					text += "\nBambooWood";
+					text += "\nBambooWoodBlinnPhong";
+					text += "\nLinedGripFoam";
+					text += "\nLinedGripFoamBlinnPhong";
+					text += "\nScuffedTitanium";
+					text += "\nScuffedTitaniumBlinnPhong";
+					text += "\n\nEnvironments:";
+					text += "\nFactoryCatwalk";
+					text += "\nRidgecrestRoad";
+					mGuiObjects.emplace_back(new TextWindow("Materials and environments", text));
+				}
+
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("Misc"))
+			{
+				if (ImGui::MenuItem("Credits"))
+				{
+					std::string text("This material viewer was developed by Tom Silver.");
+					text += "\nIt was made possible by these resources:";
+					text += "\n\nMaterials: Free Pbr (https://www.freepbr.com/)";
+					text += "\n\nEnvironments: sIBL Archive (http://www.hdrlabs.com/sibl/archive.html)";
+					mGuiObjects.emplace_back(new TextWindow("Credits", text));
 				}
 
 				ImGui::EndMenu();

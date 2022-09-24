@@ -148,7 +148,10 @@
       <Filter>Source Files\Meshes</Filter>
     </ClCompile>
     <ClCompile Include="EnvironmentLoader.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Quad.cpp">
+      <Filter>Source Files\Meshes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -246,7 +249,10 @@
       <Filter>Header Files\Scene</Filter>
     </ClInclude>
     <ClInclude Include="EnvironmentLoader.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Quad.h">
+      <Filter>Header Files\Meshes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -254,12 +260,6 @@
       <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Resources\Shaders\basicPBRVS.glsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
-    <None Include="Resources\Shaders\equirectangularToCubemapVS.glsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
-    <None Include="Resources\Shaders\equirectangularToCubemapFS.glsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Resources\Shaders\blinnPhongFS.glsl">
@@ -278,6 +278,21 @@
       <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Resources\Shaders\imageBasedLightingPBRFS.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\prefilterFS.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\equirectangularToCubemapFS.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\cubemapVS.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\integrateBRDFFS.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\quadVS.glsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
   </ItemGroup>

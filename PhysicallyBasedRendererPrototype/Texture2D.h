@@ -30,5 +30,6 @@ namespace TSFYP
 
 	Texture2D CreateTexture2DUInt(const std::string name, const Texture2D::TextureType textureType, const std::string& filePath);
 	Texture2D CreateTexture2DFloat(const std::string name, const Texture2D::TextureType textureType, const std::string& filePath);
-	Texture2D CreateEmptyCubemap(const std::string name, const unsigned int width, const unsigned int height);
+	Texture2D CreateEmptyTexture2D(const std::string name, const unsigned int width, const unsigned int height);
+	Texture2D CreateEmptyCubemap(const std::string name, const unsigned int width, const unsigned int height, bool generateMipMap = false);
 }

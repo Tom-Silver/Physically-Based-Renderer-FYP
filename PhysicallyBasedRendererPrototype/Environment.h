@@ -15,14 +15,14 @@ namespace TSFYP
 			: mName("")
 			, mBackground()
 			, mIrradianceMap()
-			, mSpecularMap()
 			, mLights()
 		{}
 
 		std::string mName;
 		Texture2D mBackground;
 		Texture2D mIrradianceMap;
-		Texture2D mSpecularMap;
+		Texture2D mPrefilterMap;
+		Texture2D mBRDFLUT;
 		std::vector<ILight*> mLights;
 	};
 }

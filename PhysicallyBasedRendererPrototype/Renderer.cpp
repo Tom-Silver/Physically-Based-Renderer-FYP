@@ -131,14 +131,32 @@ namespace TSFYP
 			glBindTexture(GL_TEXTURE_2D, texture.id);
 		}
 
-		// If using IBL, try to set irradiance map uniform
+		// If using IBL, try to set map uniforms
+		int textureNo = sceneObject->material->textures.size(); // Use the next slot after the final material texture is bound
 		if (scene->mEnvironment->mIrradianceMap.id != 0)
 		{
-			int textureNo = sceneObject->material->textures.size(); // Use the next slot after the final material texture is bound
 			shader->SetUniform("irradianceMap", textureNo);
 
 			glActiveTexture(GL_TEXTURE0 + textureNo);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, scene->mEnvironment->mIrradianceMap.id);
+
+			textureNo++;
+		}
+		if (scene->mEnvironment->mPrefilterMap.id != 0)
+		{
+			shader->SetUniform("prefilterMap", textureNo);
+
+			glActiveTexture(GL_TEXTURE0 + textureNo);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, scene->mEnvironment->mPrefilterMap.id);
+
+			textureNo++;
+		}
+		if (scene->mEnvironment->mBRDFLUT.id != 0)
+		{
+			shader->SetUniform("brdfLUT", textureNo);
+
+			glActiveTexture(GL_TEXTURE0 + textureNo);
+			glBindTexture(GL_TEXTURE_2D, scene->mEnvironment->mBRDFLUT.id);
 		}
 
 		// Bind VAO and draw

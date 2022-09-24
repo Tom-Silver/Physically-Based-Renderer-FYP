@@ -1,7 +1,7 @@
 {
 	"name": "LinedGripFoam",
 	"shader": {
-		"fragment": "basicPBRFS",
+		"fragment": "imageBasedLightingPBRFS",
 		"name": "basicPBR",
 		"vertex": "basicPBRVS"
 	},

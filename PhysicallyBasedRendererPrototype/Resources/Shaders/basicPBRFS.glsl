@@ -1,4 +1,4 @@
-#version 460 core
+#version 430 core
 
 in VSOutput
 {
@@ -246,9 +246,4 @@ void main()
     colour = pow(colour, vec3(1.0 / 2.2)); // Gamma correction
 
 	fragColour = vec4(colour, 1.0);
-
-    if (material.test == 1.0)
-    {
-        fragColour = vec4(0.1, 0.1, 0.1, 1.0);
-    }
 }

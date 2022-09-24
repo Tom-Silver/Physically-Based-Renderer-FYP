@@ -1,4 +1,4 @@
-#version 460 core
+#version 430 core
 
 in VSOutput
 {
@@ -20,7 +20,10 @@ struct Material
 
 uniform Material material;
 
+// Image-based lighting maps
 uniform samplerCube irradianceMap;
+uniform samplerCube prefilterMap;
+uniform sampler2D brdfLUT;
 
 struct PointLight
 {
@@ -106,6 +109,11 @@ float GeometrySmith(vec3 normal, vec3 vertexToCamera, vec3 vertexToLight, float 
 vec3 FresnelSchlick(float cosTheta, vec3 F0)
 {
     return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
+
+vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+{
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 
 vec3 CookTorranceBRDF(vec3 normal, float roughness, vec3 vertexToCamera, vec3 vertexToLight, vec3 F0, out vec3 F)
@@ -209,15 +217,25 @@ void main()
     // Do reflectance equation
     vec3 Lo = ReflectanceEquation(albedo, metallic, roughness, ao, normal);
 
-    // Calculate ambient lighting
-    vec3 F0 = vec3(0.04);
+    // Calculate ambient lighting    
     vec3 vertexToCamera = normalize(camPos - fInput.worldPos);
-    vec3 kS = FresnelSchlick(max(dot(normal, vertexToCamera), 0.0), F0);
+    vec3 F0 = vec3(0.04);
+    vec3 F = FresnelSchlickRoughness(max(dot(normal, vertexToCamera), 0.0), F0, roughness);
+
+    vec3 kS = F;
     vec3 kD = 1.0 - kS;
     kD *= 1.0 - metallic;
+
     vec3 irradiance = texture(irradianceMap, normal).rgb;
     vec3 diffuse = irradiance * albedo;
-    vec3 ambient = (kD * diffuse) * ao;
+
+    const float maxReflectionLOD = 4.0;
+    vec3 R = reflect(-vertexToCamera, normal);
+    vec3 prefilteredColour = textureLod(prefilterMap, R, roughness * maxReflectionLOD).rgb;
+    vec2 brdf = texture(brdfLUT, vec2(max(dot(normal, vertexToCamera), 0.0), roughness)).rg;
+    vec3 specular = prefilteredColour * (F * brdf.x + brdf.y);
+
+    vec3 ambient = (kD * diffuse + specular) * ao;
 
     vec3 colour = ambient + Lo;
 

@@ -164,6 +164,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="MaterialLoader.cpp" />
+    <ClCompile Include="Quad.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneObject.cpp" />
@@ -195,6 +196,7 @@
     <ClInclude Include="Light.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="MaterialLoader.h" />
+    <ClInclude Include="Quad.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneObject.h" />
@@ -212,11 +214,14 @@
     <None Include="Resources\Shaders\blinnPhongFS.glsl" />
     <None Include="Resources\Shaders\blinnPhongVS.glsl" />
     <None Include="Resources\Shaders\equirectangularToCubemapFS.glsl" />
-    <None Include="Resources\Shaders\equirectangularToCubemapVS.glsl" />
+    <None Include="Resources\Shaders\cubemapVS.glsl" />
     <None Include="Resources\Shaders\basicPBRFS.glsl" />
     <None Include="Resources\Shaders\basicPBRVS.glsl" />
     <None Include="Resources\Shaders\imageBasedLightingPBRFS.glsl" />
+    <None Include="Resources\Shaders\integrateBRDFFS.glsl" />
     <None Include="Resources\Shaders\irradianceConvolutionFS.glsl" />
+    <None Include="Resources\Shaders\prefilterFS.glsl" />
+    <None Include="Resources\Shaders\quadVS.glsl" />
     <None Include="Resources\Shaders\skyboxFS.glsl" />
     <None Include="Resources\Shaders\skyboxVS.glsl" />
   </ItemGroup>

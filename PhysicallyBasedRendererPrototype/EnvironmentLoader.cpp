@@ -12,6 +12,7 @@
 #include "Cube.h"
 #include "Environment.h"
 #include "Light.h"
+#include "Quad.h"
 #include "ShaderCompiler.h"
 #include "Window.h"
 
@@ -19,13 +20,25 @@ using json = nlohmann::json;
 
 namespace TSFYP
 {
+	static const glm::mat4 captureViews[] =
+	{
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
+	};
+	static const glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+
 	Texture2D LoadTexture(const json& jTexture, const std::string& filePrefix);
 	PointLight* LoadPointLight(const json& jLight, const glm::vec3& emittedColour);
 	DirectionalLight* LoadDirectionalLight(const json& jLight, const glm::vec3& emittedColour);
 
 	Texture2D CreateBackground(Texture2D equirectangularTexture, Window* window);
 	Texture2D CreateIrradianceMap(Texture2D environment, Window* window);
-	Texture2D CreateSpecularMap(Texture2D environment, Window* window);
+	Texture2D CreatePrefilterMap(Texture2D environment, Window* window);
+	Texture2D CreateBRDFLUT(Window* window);
 
 	Environment* LoadEnvironment(const std::string& name, Window* window)
 	{
@@ -88,11 +101,13 @@ namespace TSFYP
 
 		if (jFile.contains("specular"))
 		{
-			newEnvironment->mSpecularMap = LoadTexture(jFile["specular"], prefix);
+			newEnvironment->mPrefilterMap = LoadTexture(jFile["specular"], prefix);
+			newEnvironment->mBRDFLUT = CreateBRDFLUT(window);
 		}
 		else
-		{ // If we don't have a pre-made specular map, we can calculate one
-			newEnvironment->mSpecularMap = CreateSpecularMap(newEnvironment->mBackground, window);
+		{ // If we don't have a pre-made pre-filter map, we can calculate one
+			newEnvironment->mPrefilterMap = CreatePrefilterMap(newEnvironment->mBackground, window);
+			newEnvironment->mBRDFLUT = CreateBRDFLUT(window);
 		}
 
 		if (jFile.contains("lights"))
@@ -201,21 +216,10 @@ namespace TSFYP
 
 		Texture2D environmentMap = CreateEmptyCubemap("environmentcubemap", 512, 512);
 
-		glm::mat4 captureViews[] =
-		{
-			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
-			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
-			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
-		};
-		glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
-
 		unsigned int captureFBO;
 		glGenFramebuffers(1, &captureFBO);
 
-		Shader* equirectangularToCubemapShader = CreateShader("equirectangularToCubemap", "Resources/Shaders/equirectangularToCubemapVS.glsl", "Resources/Shaders/equirectangularToCubemapFS.glsl");
+		Shader* equirectangularToCubemapShader = CreateShader("equirectangularToCubemap", "Resources/Shaders/cubemapVS.glsl", "Resources/Shaders/equirectangularToCubemapFS.glsl");
 		equirectangularToCubemapShader->Use();
 		equirectangularToCubemapShader->SetUniform("equirectangularMap", 0);
 		equirectangularToCubemapShader->SetUniform("projection", captureProjection);
@@ -250,17 +254,6 @@ namespace TSFYP
 	{
 		Cube* renderCube = CreateCube();
 
-		glm::mat4 captureViews[] =
-		{
-			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
-			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
-			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
-		};
-		glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
-
 		Texture2D irradianceMap = CreateEmptyCubemap("irradiancecubemap", 32, 32);
 
 		unsigned int captureFBO, captureRBO;
@@ -276,7 +269,7 @@ namespace TSFYP
 		glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 32, 32);
 
-		Shader* irradianceShader = CreateShader("irradianceConvolution", "Resources/Shaders/equirectangularToCubemapVS.glsl", "Resources/Shaders/irradianceConvolutionFS.glsl");
+		Shader* irradianceShader = CreateShader("irradianceConvolution", "Resources/Shaders/cubemapVS.glsl", "Resources/Shaders/irradianceConvolutionFS.glsl");
 		irradianceShader->Use();
 		irradianceShader->SetUniform("environmentMap", 0);
 		irradianceShader->SetUniform("projection", captureProjection);
@@ -306,8 +299,92 @@ namespace TSFYP
 		return irradianceMap;
 	}
 
-	Texture2D CreateSpecularMap(Texture2D environment, Window* window)
+	Texture2D CreatePrefilterMap(Texture2D environment, Window* window)
 	{
-		return Texture2D();
+		Cube* renderCube = CreateCube();
+
+		unsigned int width = 128;
+		unsigned int height = 128;
+		Texture2D prefilterMap = CreateEmptyCubemap("prefilterMap", width, height, true);
+
+		unsigned int captureFBO, captureRBO;
+		glGenFramebuffers(1, &captureFBO);
+		glGenRenderbuffers(1, &captureRBO);
+
+		Shader* prefilterShader = CreateShader("prefilterShader", "Resources/Shaders/cubemapVS.glsl", "Resources/Shaders/prefilterFS.glsl");
+		prefilterShader->Use();
+		prefilterShader->SetUniform("environmentMap", 0);
+		prefilterShader->SetUniform("projection", captureProjection);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, environment.id);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+		unsigned int maxMipLevels = 5;
+		for (unsigned int mip = 0; mip < maxMipLevels; mip++)
+		{
+			unsigned int mipWidth = static_cast<unsigned int>(width * std::pow(0.5, mip));
+			unsigned int mipHeight = static_cast<unsigned int>(height * std::pow(0.5, mip));
+
+			glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
+			glViewport(0, 0, mipWidth, mipHeight);
+
+			float roughness = (float)mip / (float)(maxMipLevels - 1);
+			prefilterShader->SetUniform("roughness", roughness);
+
+			for (unsigned int i = 0; i < 6; i++)
+			{
+				prefilterShader->SetUniform("view", captureViews[i]);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, prefilterMap.id, mip);
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+				glBindVertexArray(renderCube->vao);
+				glDrawArrays(GL_TRIANGLES, 0, 36);
+				glBindVertexArray(0);
+			}
+		}
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		// Clean up
+		glViewport(0, 0, window->width, window->height); // Set viewport back to screen dimensions
+		delete renderCube;
+
+		return prefilterMap;
+	}
+
+	Texture2D CreateBRDFLUT(Window* window)
+	{
+		Quad* renderQuad = CreateQuad();
+
+		unsigned int captureFBO, captureRBO;
+		glGenFramebuffers(1, &captureFBO);
+		glGenRenderbuffers(1, &captureRBO);
+
+		unsigned int width = 512;
+		unsigned int height = 512;
+		Texture2D brdfLUT = CreateEmptyTexture2D("brdfLUT", width, height);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+		glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdfLUT.id, 0);
+
+		glViewport(0, 0, width, height);
+		Shader* brdfShader = CreateShader("brdfShader", "Resources/Shaders/quadVS.glsl", "Resources/Shaders/integrateBRDFFS.glsl");
+		brdfShader->Use();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glBindVertexArray(renderQuad->vao);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		glBindVertexArray(0);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		// Clean up
+		glViewport(0, 0, window->width, window->height); // Set viewport back to screen dimensions
+		delete renderQuad;
+
+		return brdfLUT;
 	}
 }

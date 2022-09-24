@@ -1,0 +1,36 @@
+{
+	"name": "factoryCatwalk",
+	"background": {
+		"fileName": "background.jpg",
+		"name": "factoryCatwalkBackground",
+		"type": 0
+	},
+	"lights": [
+		{
+			"type": 1,
+			"emittedColour": {
+				"r": 0.98,
+				"g": 0.86,
+				"b": 0.74
+			},
+			"dir": {
+				"x": 0.14,
+				"y": 0.02,
+				"z": 0.26
+			}
+		},
+		{
+			"type": 1,
+			"emittedColour": {
+				"r": 0.30,
+				"g": 0.62,
+				"b": 1.0
+			},
+			"dir": {
+				"x": -0.16,
+				"y": 0.03,
+				"z": -0.27
+			}
+		}
+	]
+}

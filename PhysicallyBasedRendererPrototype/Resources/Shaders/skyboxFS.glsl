@@ -1,4 +1,4 @@
-#version 460 core
+#version 430 core
 
 in VSOutput
 {
@@ -11,7 +11,7 @@ uniform samplerCube environmentMap;
 
 void main()
 {
-	vec3 colour = texture(environmentMap, fInput.worldPos).rgb;
+	vec3 colour = textureLod(environmentMap, fInput.worldPos, 0.0).rgb;
 
 	// HDR tonemap/gamma correction
 	colour = colour / (colour + vec3(1.0));

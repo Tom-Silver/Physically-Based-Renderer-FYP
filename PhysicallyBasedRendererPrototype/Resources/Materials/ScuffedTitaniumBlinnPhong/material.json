@@ -1,0 +1,22 @@
+{
+	"name": "ScuffedTitaniumBlinnPhong",
+	"shader": {
+		"fragment": "blinnPhongFS",
+		"name": "blinnPhong",
+		"vertex": "blinnPhongVS"
+	},
+	"textures": [
+		{
+			"fileName": "albedo.png",
+			"name": "albedo",
+			"type": 0
+		},
+		{
+			"fileName": "normal.png",
+			"name": "normal",
+			"type": 1
+		}
+	],
+	"uniforms":
+	[]
+}

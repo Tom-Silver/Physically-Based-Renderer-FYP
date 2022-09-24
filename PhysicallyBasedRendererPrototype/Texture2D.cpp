@@ -104,7 +104,30 @@ namespace TSFYP
 		return Texture2D(id, name, textureType, (unsigned int)width, (unsigned int)height);
 	}
 
-	Texture2D CreateEmptyCubemap(const std::string name, const unsigned int width, const unsigned int height)
+	Texture2D CreateEmptyTexture2D(const std::string name, const unsigned int width, const unsigned int height)
+	{
+		unsigned int id = 0;
+		glGenTextures(1, &id);
+
+		GLenum internalFormat = GL_RG16F;
+		GLenum format = GL_RG;
+		GLenum type = GL_FLOAT;
+
+		glBindTexture(GL_TEXTURE_2D, id);
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, nullptr);
+
+		// Set texture wrap and filtering parameters on bound texture
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+
+		Texture2D::TextureType textureType = Texture2D::TextureType::ALBEDO;
+		return Texture2D(id, name, textureType, (unsigned int)width, (unsigned int)height);
+	}
+
+	Texture2D CreateEmptyCubemap(const std::string name, const unsigned int width, const unsigned int height, bool generateMipMap)
 	{
 		unsigned int id = 0;
 		glGenTextures(1, &id);
@@ -121,12 +144,18 @@ namespace TSFYP
 		}
 
 		// Set texture wrap and filtering parameters on bound texture
+		GLint minFilter = generateMipMap ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
+
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, minFilter);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+		if (generateMipMap)
+		{
+			glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+		}
 
 		Texture2D::TextureType textureType = Texture2D::TextureType::ALBEDO;
 		return Texture2D(id, name, textureType, (unsigned int)width, (unsigned int)height);
